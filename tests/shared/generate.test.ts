@@ -48,11 +48,11 @@ describe('generateGel', () => {
   it('renders disabled blocks as comments with -- sanitized', () => {
     const f = createEmptyFlow('X')
     const log = createBlock('log-message')
-    log.props = { stepName: 'Old log', level: 'INFO', message: 'a--b' }
+    log.props = { stepName: 'Old--log', level: 'INFO', message: 'a--b' }
     log.enabled = false
     f.blocks = [log]
     const out = generateGel(f)
-    expect(out).toContain('<!-- disabled: Old log')
+    expect(out).toContain('<!-- disabled: Old- -log')
     expect(out).not.toMatch(/<gel:log[^!]*a--b/)
   })
 })

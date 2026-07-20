@@ -21,7 +21,7 @@ function renderBlocks(blocks: Block[]): string[] {
     const def = getNodeDef(blk.type)
     const body = def.toGel(blk, renderBlocks)
     if (!blk.enabled) {
-      lines.push(`<!-- disabled: ${blk.props.stepName || def.name}`)
+      lines.push(`<!-- disabled: ${(blk.props.stepName || def.name).replace(/--/g, '- -')}`)
       lines.push(...body.map(l => l.replace(/--/g, '- -')))
       lines.push('-->')
     } else {
