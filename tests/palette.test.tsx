@@ -15,4 +15,12 @@ describe('palette', () => {
     expect(useGve.getState().flow.blocks).toHaveLength(1)
     expect(useGve.getState().flow.blocks[0].type).toBe('log-message')
   })
+  it('supports keyboard insertion from focusable palette rows', () => {
+    useGve.getState().loadFlow(createEmptyFlow('T'), null)
+    render(<Palette />)
+    const log = screen.getByRole('button', { name: 'Log Message' })
+    expect(log.getAttribute('tabindex')).toBe('0')
+    fireEvent.keyDown(log, { key: 'Enter' })
+    expect(useGve.getState().flow.blocks[0].type).toBe('log-message')
+  })
 })

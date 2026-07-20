@@ -25,12 +25,20 @@ function Palette(): React.JSX.Element {
                 <div
                   className="gve-palette-row"
                   key={def.type}
+                  role="button"
+                  tabIndex={0}
                   draggable
                   onDragStart={event => {
                     event.dataTransfer.setData('application/x-gve-new-block', def.type)
                     event.dataTransfer.effectAllowed = 'copy'
                   }}
                   onDoubleClick={() => addBlock(def.type, { parentId: null, index: flow.blocks.length })}
+                  onKeyDown={event => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault()
+                      addBlock(def.type, { parentId: null, index: flow.blocks.length })
+                    }
+                  }}
                 >
                   <span className="gve-palette-dot" style={{ backgroundColor: def.color }} />
                   <span>{def.name}</span>
