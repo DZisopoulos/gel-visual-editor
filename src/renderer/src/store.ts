@@ -22,7 +22,7 @@ export interface GveState {
 const snap = (s: { flow: Flow; past: Flow[] }) =>
   ({ past: [...s.past.slice(-99), structuredClone(s.flow)], future: [] as Flow[], dirty: true })
 
-export const useGve = create<GveState>((set, get) => ({
+export const useGve = create<GveState>((set) => ({
   flow: createEmptyFlow(), selectedId: null, dirty: false, filePath: null, past: [], future: [],
   select: id => set({ selectedId: id }),
   loadFlow: (flow, filePath) => set({ flow, filePath, selectedId: null, dirty: false, past: [], future: [] }),
@@ -31,21 +31,41 @@ export const useGve = create<GveState>((set, get) => ({
     return { ...snap(s), flow: { ...s.flow, blocks: insertBlock(s.flow.blocks, blk, target) }, selectedId: blk.id }
   }),
   updateProps: (id, patch) => set(s => {
-    const walk = (bs: typeof s.flow.blocks): typeof s.flow.blocks => bs.map(b =>
-      b.id === id ? { ...b, props: { ...b.props, ...patch } }
-        : b.children ? { ...b, children: walk(b.children) } : b)
-    return { ...snap(s), flow: { ...s.flow, blocks: walk(s.flow.blocks) } }
+    let found = false
+    const walk = (bs: typeof s.flow.blocks): typeof s.flow.blocks => bs.map(b => {
+      if (b.id === id) {
+        found = true
+        return { ...b, props: { ...b.props, ...patch } }
+      }
+      return b.children ? { ...b, children: walk(b.children) } : b
+    })
+    const blocks = walk(s.flow.blocks)
+    return found ? { ...snap(s), flow: { ...s.flow, blocks } } : s
   }),
   updateMeta: patch => set(s => ({ ...snap(s), flow: { ...s.flow, meta: { ...s.flow.meta, ...patch } } })),
-  move: (id, target) => set(s => ({ ...snap(s), flow: { ...s.flow, blocks: moveBlock(s.flow.blocks, id, target) } })),
-  remove: id => set(s => ({
-    ...snap(s), flow: { ...s.flow, blocks: removeBlock(s.flow.blocks, id).blocks },
-    selectedId: s.selectedId === id || (s.selectedId && !findBlock(removeBlock(s.flow.blocks, id).blocks, s.selectedId)) ? null : s.selectedId
-  })),
+  move: (id, target) => set(s => {
+    const blocks = moveBlock(s.flow.blocks, id, target)
+    return blocks === s.flow.blocks ? s : { ...snap(s), flow: { ...s.flow, blocks } }
+  }),
+  remove: id => set(s => {
+    const { blocks, removed } = removeBlock(s.flow.blocks, id)
+    if (!removed) return s
+    return {
+      ...snap(s), flow: { ...s.flow, blocks },
+      selectedId: s.selectedId === id || (s.selectedId && !findBlock(blocks, s.selectedId)) ? null : s.selectedId
+    }
+  }),
   toggleEnabled: id => set(s => {
-    const walk = (bs: typeof s.flow.blocks): typeof s.flow.blocks => bs.map(b =>
-      b.id === id ? { ...b, enabled: !b.enabled } : b.children ? { ...b, children: walk(b.children) } : b)
-    return { ...snap(s), flow: { ...s.flow, blocks: walk(s.flow.blocks) } }
+    let found = false
+    const walk = (bs: typeof s.flow.blocks): typeof s.flow.blocks => bs.map(b => {
+      if (b.id === id) {
+        found = true
+        return { ...b, enabled: !b.enabled }
+      }
+      return b.children ? { ...b, children: walk(b.children) } : b
+    })
+    const blocks = walk(s.flow.blocks)
+    return found ? { ...snap(s), flow: { ...s.flow, blocks } } : s
   }),
   markSaved: filePath => set({ dirty: false, filePath }),
   undo: () => set(s => s.past.length === 0 ? s : {

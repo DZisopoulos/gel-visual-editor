@@ -38,4 +38,27 @@ describe('store', () => {
     const s = useGve.getState()
     expect(s.past).toHaveLength(0); expect(s.dirty).toBe(false); expect(s.filePath).toBe('C:/x.gve')
   })
+  it('rejected self moves do not dirty the flow or add history', () => {
+    useGve.getState().addBlock('for-each', { parentId: null, index: 0 })
+    const before = useGve.getState()
+    const id = before.flow.blocks[0].id
+    useGve.getState().markSaved('C:/x.gve')
+    const saved = useGve.getState()
+
+    useGve.getState().move(id, { parentId: id, index: 0 })
+
+    const after = useGve.getState()
+    expect(after.flow).toBe(saved.flow)
+    expect(after.past).toBe(saved.past)
+    expect(after.future).toBe(saved.future)
+    expect(after.dirty).toBe(false)
+  })
+  it('actions targeting missing blocks are no-ops', () => {
+    const before = useGve.getState()
+    before.updateProps('missing', { message: 'nope' })
+    useGve.getState().remove('missing')
+    useGve.getState().toggleEnabled('missing')
+    useGve.getState().move('missing', { parentId: null, index: 0 })
+    expect(useGve.getState()).toBe(before)
+  })
 })
