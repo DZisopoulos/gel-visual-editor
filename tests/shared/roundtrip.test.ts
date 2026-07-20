@@ -24,8 +24,14 @@ describe('roundtrip', () => {
     expect(marker.slice(4)).not.toContain('--')  // skip the "<!--" itself
   })
   it('detects drift when body is hand-edited', () => {
-    const tampered = exportXml(flowWithSql()).replace('SELECT 1', 'SELECT 2')
+    const xml = exportXml(flowWithSql())
+    const markerEnd = xml.indexOf('\n-->\n') + '\n-->\n'.length
+    const tampered = xml.slice(0, markerEnd) + xml.slice(markerEnd).replace('SELECT 1', 'SELECT 2')
     expect(importXml(tampered).drift).toBe(true)
+  })
+  it('does not report body drift when only embedded flow JSON changes', () => {
+    const markerOnlyEdit = exportXml(flowWithSql()).replace('SELECT 1', 'SELECT 2')
+    expect(importXml(markerOnlyEdit).drift).toBe(false)
   })
   it('throws no-marker for foreign scripts', () => {
     expect(() => importXml('<gel:script/>')).toThrowError(GveImportError)

@@ -34,8 +34,5 @@ export function importXml(text: string): ImportResult {
     throw new GveImportError('bad-payload', 'Embedded flow definition has an unexpected shape.')
   }
   const body = text.slice(end + '\n-->\n'.length)
-  return {
-    flow,
-    drift: fnv1a(body) !== storedHash || fnv1a(generateGel(flow)) !== storedHash
-  }
+  return { flow, drift: fnv1a(body) !== storedHash }
 }
