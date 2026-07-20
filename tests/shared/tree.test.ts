@@ -39,6 +39,15 @@ describe('tree ops', () => {
     expect(out.map(x => x.id)).toEqual(['loop', 'c'])
     expect(findBlock(out, 'loop')!.children!.map(x => x.id)).toEqual(['a', 'x', 'y'])
   })
+  it('moveBlock adjusts downward indices within the same sibling list', () => {
+    const root = [b('a'), b('b'), b('c')]
+    expect(moveBlock(root, 'a', { parentId: null, index: 2 }).map(x => x.id))
+      .toEqual(['b', 'a', 'c'])
+
+    const nested = [b('loop', 'for-each', [b('x'), b('y'), b('z')])]
+    const moved = moveBlock(nested, 'x', { parentId: 'loop', index: 2 })
+    expect(findBlock(moved, 'loop')!.children!.map(x => x.id)).toEqual(['y', 'x', 'z'])
+  })
   it('moveBlock refuses to move a block into itself', () => {
     const input = tree()
     expect(moveBlock(input, 'loop', { parentId: 'loop', index: 0 })).toBe(input)

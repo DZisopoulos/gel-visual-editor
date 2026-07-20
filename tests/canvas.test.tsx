@@ -30,4 +30,34 @@ describe('canvas', () => {
     fireEvent.drop(nested, dt('application/x-gve-new-block', 'log-message'))
     expect(useGve.getState().flow.blocks[0].children![0].type).toBe('log-message')
   })
+  it('nested block click and drag do not bubble to the container', () => {
+    useGve.getState().addBlock('for-each', { parentId: null, index: 0 })
+    const loopId = useGve.getState().flow.blocks[0].id
+    useGve.getState().addBlock('log-message', { parentId: loopId, index: 0 })
+    const logId = useGve.getState().flow.blocks[0].children![0].id
+    render(<Canvas />)
+    const label = screen.getByText('Log Message')
+
+    fireEvent.click(label)
+    expect(useGve.getState().selectedId).toBe(logId)
+
+    const payload: Record<string, string> = {}
+    fireEvent.dragStart(label.closest('.gve-block')!, {
+      dataTransfer: {
+        setData: (type: string, value: string) => { payload[type] = value },
+        effectAllowed: ''
+      }
+    })
+    expect(payload['application/x-gve-move-block']).toBe(logId)
+  })
+  it('block cards support keyboard selection', () => {
+    useGve.getState().addBlock('log-message', { parentId: null, index: 0 })
+    const id = useGve.getState().flow.blocks[0].id
+    render(<Canvas />)
+    const card = document.querySelector('.gve-block')!
+    expect(card.getAttribute('role')).toBe('button')
+    expect(card.getAttribute('tabindex')).toBe('0')
+    fireEvent.keyDown(card, { key: 'Enter' })
+    expect(useGve.getState().selectedId).toBe(id)
+  })
 })

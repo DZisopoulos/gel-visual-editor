@@ -47,9 +47,31 @@ export function insertBlock(blocks: Block[], block: Block, target: DropTarget): 
   return out
 }
 
+function findLocation(
+  blocks: Block[],
+  id: string,
+  parentId: string | null = null
+): { parentId: string | null; index: number } | null {
+  for (let index = 0; index < blocks.length; index++) {
+    const block = blocks[index]
+    if (block.id === id) return { parentId, index }
+    if (block.children) {
+      const nested = findLocation(block.children, id, block.id)
+      if (nested) return nested
+    }
+  }
+  return null
+}
+
 export function moveBlock(blocks: Block[], id: string, target: DropTarget): Block[] {
   if (target.parentId === id || (target.parentId && isDescendant(blocks, id, target.parentId))) return blocks
+  const source = findLocation(blocks, id)
+  if (!source) return blocks
+  const adjustedTarget = source.parentId === target.parentId && source.index < target.index
+    ? { ...target, index: target.index - 1 }
+    : target
+  if (source.parentId === adjustedTarget.parentId && source.index === adjustedTarget.index) return blocks
   const { blocks: without, removed } = removeBlock(blocks, id)
   if (!removed) return blocks
-  return insertBlock(without, removed, target)
+  return insertBlock(without, removed, adjustedTarget)
 }

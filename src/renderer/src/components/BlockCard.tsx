@@ -20,9 +20,22 @@ function BlockCard({ block, children }: BlockCardProps): React.JSX.Element {
   return (
     <article
       className={`gve-block${selected ? ' gve-block-selected' : ''}${block.enabled ? '' : ' gve-block-disabled'}`}
+      role="button"
+      tabIndex={0}
       draggable
-      onClick={() => select(block.id)}
+      onClick={event => {
+        event.stopPropagation()
+        select(block.id)
+      }}
+      onKeyDown={event => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault()
+          event.stopPropagation()
+          select(block.id)
+        }
+      }}
       onDragStart={event => {
+        event.stopPropagation()
         event.dataTransfer.setData('application/x-gve-move-block', block.id)
         event.dataTransfer.effectAllowed = 'move'
       }}
