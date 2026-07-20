@@ -1,0 +1,8 @@
+:root {
+  --bg: #0F1218; --panel: #171C26; --panel-2: #131822; --border: #2A3140;
+  --accent: #2DD4BF; --warn: #F5B84D; --error: #F26D6D; --ok: #4ADE80;
+  --text: #E1E2EB; --text-muted: #8A93A6;
+  --font-ui: Inter, 'Segoe UI', sans-serif; --font-mono: 'JetBrains Mono', Consolas, monospace;
+}
+html, body, #root { height: 100%; margin: 0; background: var(--bg); color: var(--text); font-family: var(--font-ui); font-size: 13px; }
+* { box-sizing: border-box; }
