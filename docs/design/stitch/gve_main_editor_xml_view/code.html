@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>GVE — GEL Visual Editor | XML View</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 20;
+            font-size: 18px;
+        }
+        .syntax-tag { color: #2DD4BF; }
+        .syntax-attr { color: #bd871d; }
+        .syntax-string { color: #f9bc50; }
+        .syntax-comment { color: #859490; }
+        .editor-gutter { width: 45px; }
+        .code-line:hover { background-color: rgba(45, 212, 191, 0.05); }
+        .code-line-highlighted { background-color: rgba(45, 212, 191, 0.1); border-left: 2px solid #57f1db; }
+        
+        /* Custom scrollbar for IDE feel */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #101319; }
+        ::-webkit-scrollbar-thumb { background: #32353b; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #3c4a46; }
+
+        .minimap-overlay {
+            mask-image: linear-gradient(to bottom, black 10%, transparent 90%);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary": "#57f1db",
+                        "on-primary": "#003731",
+                        "primary-container": "#2dd4bf",
+                        "on-primary-container": "#00574d",
+                        "secondary": "#f9bc50",
+                        "on-secondary": "#432c00",
+                        "secondary-container": "#bd871d",
+                        "on-secondary-container": "#3a2600",
+                        "surface": "#101319",
+                        "on-surface": "#e1e2eb",
+                        "surface-container": "#1d2026",
+                        "surface-container-low": "#191c22",
+                        "surface-container-high": "#272a31",
+                        "surface-variant": "#32353b",
+                        "on-surface-variant": "#bacac5",
+                        "outline": "#859490",
+                        "outline-variant": "#3c4a46",
+                        "background": "#101319"
+                    },
+                    "fontFamily": {
+                        "label-md": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "body-md": ["Inter"],
+                        "code-md": ["JetBrains Mono"]
+                    },
+                    "fontSize": {
+                        "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                        "headline-md": ["16px", {"lineHeight": "24px", "fontWeight": "600"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "code-md": ["13px", {"lineHeight": "20px", "fontWeight": "400"}]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background text-on-surface font-body-md h-screen flex flex-col overflow-hidden">
+<!-- TopNavBar -->
+<header class="flex justify-between items-center px-4 h-12 w-full z-50 bg-surface-container border-b border-outline-variant shrink-0">
+<div class="flex items-center gap-4">
+<span class="font-headline-md font-bold text-primary">GVE — GEL Visual Editor</span>
+<div class="h-4 w-[1px] bg-outline-variant"></div>
+<div class="flex items-center gap-2 text-on-surface-variant font-label-md">
+<span>My Flows</span>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span class="text-on-surface">Timesheet Reminder Notifications</span>
+</div>
+</div>
+<!-- Segmented Control -->
+<div class="flex bg-surface-container-high p-1 rounded-lg border border-outline-variant">
+<button class="px-4 py-1 font-label-md text-on-surface-variant hover:text-on-surface transition-colors">Design</button>
+<button class="px-4 py-1 font-label-md bg-primary-container text-on-primary-container rounded shadow-sm">XML</button>
+<button class="px-4 py-1 font-label-md text-on-surface-variant hover:text-on-surface transition-colors">Validate</button>
+</div>
+<div class="flex items-center gap-3">
+<div class="flex items-center gap-1.5 text-primary-container font-label-md mr-2">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span>Valid</span>
+</div>
+<div class="flex items-center gap-1 mr-4">
+<button class="p-1 hover:bg-surface-variant rounded text-on-surface-variant"><span class="material-symbols-outlined">undo</span></button>
+<button class="p-1 hover:bg-surface-variant rounded text-on-surface-variant"><span class="material-symbols-outlined">redo</span></button>
+</div>
+<button class="px-3 py-1.5 font-label-md border border-outline-variant hover:bg-surface-variant text-on-surface rounded transition-all active:scale-95">Save Flow</button>
+<button class="px-3 py-1.5 font-label-md bg-primary text-on-primary rounded font-bold transition-all active:scale-95">Export GEL</button>
+</div>
+</header>
+<div class="flex flex-1 overflow-hidden">
+<!-- Left Panel (Script Outline) -->
+<aside class="w-[280px] bg-surface-container-low flex flex-col border-r border-outline-variant shrink-0">
+<div class="p-3 border-b border-outline-variant flex justify-between items-center bg-surface-container-lowest">
+<span class="font-label-md text-on-surface-variant tracking-widest text-[10px] uppercase">Outline</span>
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer">filter_list</span>
+</div>
+<nav class="flex-1 overflow-y-auto p-2 space-y-0.5">
+<!-- Root Script -->
+<div class="flex items-center gap-2 p-1.5 text-on-surface font-label-md hover:bg-surface-variant rounded cursor-pointer">
+<span class="material-symbols-outlined text-[16px]">description</span>
+<span>Script</span>
+</div>
+<!-- Parameters -->
+<div class="ml-4 space-y-0.5">
+<div class="flex items-center gap-2 p-1.5 text-on-surface-variant font-label-md hover:bg-surface-variant rounded cursor-pointer">
+<span class="material-symbols-outlined text-[16px] text-primary">data_object</span>
+<span>projectId</span>
+</div>
+<div class="flex items-center gap-2 p-1.5 text-on-surface-variant font-label-md hover:bg-surface-variant rounded cursor-pointer">
+<span class="material-symbols-outlined text-[16px] text-primary">data_object</span>
+<span>daysLate</span>
+</div>
+</div>
+<!-- DB Query -->
+<div class="flex items-center gap-2 p-1.5 text-on-surface font-label-md hover:bg-surface-variant rounded cursor-pointer mt-2">
+<span class="material-symbols-outlined text-[16px] text-blue-400" style="font-variation-settings: 'FILL' 1;">database</span>
+<span>Get overdue timesheets</span>
+</div>
+<!-- Loop -->
+<div class="flex items-center gap-2 p-1.5 text-on-surface font-label-md hover:bg-surface-variant rounded cursor-pointer">
+<span class="material-symbols-outlined text-[16px] text-violet-400">expand_more</span>
+<span class="material-symbols-outlined text-[16px] text-violet-400">rebase_edit</span>
+<span>For each row</span>
+</div>
+<!-- Loop Children -->
+<div class="ml-8 space-y-0.5">
+<div class="flex items-center gap-2 p-1.5 text-on-surface-variant font-label-md hover:bg-surface-variant rounded cursor-pointer">
+<span class="material-symbols-outlined text-[16px] text-violet-400" style="font-variation-settings: 'FILL' 1;">alt_route</span>
+<span>When days_late > 5</span>
+</div>
+<!-- Selected State -->
+<div class="flex items-center gap-2 p-1.5 bg-primary-container/10 border-l-2 border-primary text-on-surface font-label-md rounded-r cursor-pointer ml-4">
+<span class="material-symbols-outlined text-[16px] text-primary" style="font-variation-settings: 'FILL' 1;">mail</span>
+<span>Escalation notice</span>
+</div>
+<div class="flex items-center gap-2 p-1.5 text-on-surface-variant font-label-md hover:bg-surface-variant rounded cursor-pointer">
+<span class="material-symbols-outlined text-[16px] text-primary" style="font-variation-settings: 'FILL' 1;">terminal</span>
+<span>Log processed user</span>
+</div>
+</div>
+<!-- Final Block -->
+<div class="flex items-center gap-2 p-1.5 text-on-surface font-label-md hover:bg-surface-variant rounded cursor-pointer mt-2">
+<span class="material-symbols-outlined text-[16px] text-violet-400" style="font-variation-settings: 'FILL' 1;">calculate</span>
+<span>totalProcessed</span>
+</div>
+</nav>
+<div class="p-3 border-t border-outline-variant bg-surface-container-lowest">
+<button class="w-full flex items-center justify-center gap-2 p-1.5 font-label-md bg-surface-variant hover:bg-outline-variant text-on-surface rounded transition-colors">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                    New Block
+                </button>
+</div>
+</aside>
+<!-- Main Area (Code Pane) -->
+<main class="flex-1 flex flex-col relative bg-[#0D1117]">
+<!-- Editor Toolbar -->
+<div class="absolute top-4 right-8 z-20 flex items-center gap-2 bg-surface-container-high/80 backdrop-blur border border-outline-variant rounded-full px-3 py-1.5 shadow-xl">
+<div class="flex items-center gap-2 px-2 py-0.5 border-r border-outline-variant mr-1">
+<span class="material-symbols-outlined text-[14px] text-on-surface-variant">lock</span>
+<span class="text-[11px] font-label-md text-on-surface-variant uppercase">read-only — edit in Design view</span>
+</div>
+<button class="p-1 hover:text-primary transition-colors" title="Copy XML"><span class="material-symbols-outlined">content_copy</span></button>
+<button class="p-1 hover:text-primary transition-colors" title="Download File"><span class="material-symbols-outlined">download</span></button>
+</div>
+<!-- Code Editor Container -->
+<div class="flex-1 flex font-code-md text-code-md overflow-hidden pt-4">
+<!-- Gutter -->
+<div class="editor-gutter flex flex-col items-end pr-4 text-[#484f58] select-none shrink-0">
+<div>1</div><div>2</div><div>3</div><div>4</div>
+<div class="relative">5 <div class="absolute -right-2 top-3 w-4 h-1 border-b-2 border-dashed border-secondary opacity-80" title="Missing index warning"></div></div>
+<div>6</div><div>7</div><div>8</div><div>9</div><div>10</div>
+<div>11</div><div>12</div><div>13</div><div>14</div><div>15</div>
+<div>16</div><div>17</div><div>18</div><div>19</div><div>20</div>
+<div>21</div><div>22</div><div>23</div><div>24</div><div>25</div>
+<div>26</div><div>27</div>
+</div>
+<!-- Code Content -->
+<div class="flex-1 overflow-x-auto overflow-y-scroll scroll-smooth">
+<div class="code-line whitespace-pre"><span class="syntax-comment"><!-- Timesheet Overdue Notification Script v2.4 --></span></div>
+<div class="code-line whitespace-pre"><span class="syntax-tag"><gel:script</span> <span class="syntax-attr">xmlns:gel</span>=<span class="syntax-string">"http://www.ca.com/gel"</span></div>
+<div class="code-line whitespace-pre"> <span class="syntax-attr">xmlns:sql</span>=<span class="syntax-string">"http://www.ca.com/sql"</span><span class="syntax-tag">></span></div>
+<div class="code-line whitespace-pre"> </div>
+<div class="code-line whitespace-pre"> <span class="syntax-tag"><sql:query</span> <span class="syntax-attr">var</span>=<span class="syntax-string">"overdueSheets"</span><span class="syntax-tag">></span></div>
+<div class="code-line whitespace-pre">        SELECT r.id, r.user_id, r.days_late FROM prtimesheet r</div>
+<div class="code-line whitespace-pre">        WHERE r.status = 1 AND r.days_late > ${daysLate}</div>
+<div class="code-line whitespace-pre"> <span class="syntax-tag"></sql:query></span></div>
+<div class="code-line whitespace-pre"> </div>
+<div class="code-line whitespace-pre"> <span class="syntax-tag"><gel:forEach</span> <span class="syntax-attr">select</span>=<span class="syntax-string">"$overdueSheets/column"</span> <span class="syntax-attr">var</span>=<span class="syntax-string">"row"</span><span class="syntax-tag">></span></div>
+<div class="code-line whitespace-pre"> <span class="syntax-tag"><gel:if</span> <span class="syntax-attr">test</span>=<span class="syntax-string">"${row.days_late > 5}"</span><span class="syntax-tag">></span></div>
+<!-- Highlighted Section -->
+<div class="code-line-highlighted">
+<div class="code-line whitespace-pre"> <span class="syntax-comment"><!-- Escalation notice block --></span></div>
+<div class="code-line whitespace-pre"> <span class="syntax-tag"><gel:email</span> <span class="syntax-attr">from</span>=<span class="syntax-string">"admin@company.com"</span> </div>
+<div class="code-line whitespace-pre"> <span class="syntax-attr">to</span>=<span class="syntax-string">"${row.manager_email}"</span></div>
+<div class="code-line whitespace-pre"> <span class="syntax-attr">subject</span>=<span class="syntax-string">"URGENT: Escalation for ${row.user_name}"</span><span class="syntax-tag">></span></div>
+<div class="code-line whitespace-pre">                Please review the overdue timesheet for ${row.user_name}.</div>
+<div class="code-line whitespace-pre">                Action required within 24 hours.</div>
+<div class="code-line whitespace-pre"> <span class="syntax-tag"></gel:email></span></div>
+</div>
+<div class="code-line whitespace-pre"> <span class="syntax-tag"></gel:if></span></div>
+<div class="code-line whitespace-pre"> </div>
+<div class="code-line whitespace-pre"> <span class="syntax-tag"><gel:log</span> <span class="syntax-attr">category</span>=<span class="syntax-string">"DEBUG"</span><span class="syntax-tag">></span>Processed user: ${row.user_id}<span class="syntax-tag"></gel:log></span></div>
+<div class="code-line whitespace-pre"> <span class="syntax-tag"></gel:forEach></span></div>
+<div class="code-line whitespace-pre"> </div>
+<div class="code-line whitespace-pre"> <span class="syntax-tag"><gel:set</span> <span class="syntax-attr">var</span>=<span class="syntax-string">"totalProcessed"</span> <span class="syntax-attr">value</span>=<span class="syntax-string">"count($overdueSheets)"</span><span class="syntax-tag">/></span></div>
+<div class="code-line whitespace-pre"><span class="syntax-tag"></gel:script></span></div>
+</div>
+<!-- Minimap -->
+<div class="w-16 bg-surface-container-lowest border-l border-outline-variant shrink-0 flex flex-col minimap-overlay overflow-hidden">
+<div class="opacity-30 scale-75 origin-top pointer-events-none p-1">
+<div class="h-1 bg-syntax-comment w-3/4 mb-1"></div>
+<div class="h-1 bg-primary w-full mb-1"></div>
+<div class="h-1 bg-primary w-2/3 mb-4"></div>
+<div class="h-1 bg-secondary w-full mb-1"></div>
+<div class="h-1 bg-on-surface w-4/5 mb-1"></div>
+<div class="h-1 bg-on-surface w-3/4 mb-1"></div>
+<div class="h-1 bg-primary w-1/4 mb-4"></div>
+<div class="h-1 bg-primary w-full mb-1"></div>
+<div class="h-1 bg-primary w-4/5 mb-1"></div>
+<div class="h-6 bg-primary/20 w-full mb-1 rounded-sm"></div>
+<div class="h-1 bg-primary w-3/4 mb-1"></div>
+<div class="h-1 bg-primary w-2/3 mb-1"></div>
+<div class="h-1 bg-primary w-full mb-4"></div>
+<div class="h-1 bg-primary w-1/2 mb-1"></div>
+</div>
+</div>
+</div>
+<!-- Editor Bottom Bar -->
+<footer class="h-6 bg-surface-container flex items-center justify-between px-3 border-t border-outline-variant font-label-md text-on-surface-variant text-[10px]">
+<div class="flex gap-4">
+<span>Line 14, Col 24</span>
+<span>Spaces: 4</span>
+<span>UTF-8</span>
+</div>
+<div class="flex gap-4">
+<span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-primary"></span> XML: GEL</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[12px]">sync</span> Linked to Design</span>
+</div>
+</footer>
+</main>
+</div>
+<!-- Micro-interactions Script -->
+<script>
+        document.querySelectorAll('.code-line').forEach(line => {
+            line.addEventListener('click', () => {
+                document.querySelectorAll('.code-line').forEach(l => l.classList.remove('bg-surface-variant'));
+                line.classList.add('bg-surface-variant/30');
+            });
+        });
+
+        // Toggle Expand/Collapse animation logic simulation
+        const treeItems = document.querySelectorAll('.cursor-pointer');
+        treeItems.forEach(item => {
+            item.addEventListener('click', (e) => {
+                const chevron = item.querySelector('.material-symbols-outlined:first-child');
+                if(chevron && (chevron.innerText === 'expand_more' || chevron.innerText === 'chevron_right')) {
+                    chevron.innerText = chevron.innerText === 'expand_more' ? 'chevron_right' : 'expand_more';
+                }
+            });
+        });
+    </script>
+</body></html>
