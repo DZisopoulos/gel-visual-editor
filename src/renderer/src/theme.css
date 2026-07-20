@@ -6,3 +6,91 @@
 }
 html, body, #root { height: 100%; margin: 0; background: var(--bg); color: var(--text); font-family: var(--font-ui); font-size: 13px; }
 * { box-sizing: border-box; }
+
+button,
+input {
+  font: inherit;
+}
+
+button {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--panel-2);
+  color: var(--text);
+  padding: 7px 11px;
+}
+
+button:not(:disabled) { cursor: pointer; }
+button:not(:disabled):hover { border-color: var(--accent); }
+button:disabled { color: var(--text-muted); opacity: 0.55; }
+
+.gve-app {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr) 340px;
+  grid-template-rows: 56px minmax(0, 1fr) minmax(0, 180px);
+  height: 100%;
+  min-width: 900px;
+  overflow: hidden;
+}
+
+.gve-header {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--panel);
+}
+
+.gve-brand {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 226px;
+}
+
+.gve-mark { color: var(--accent); font-weight: 800; letter-spacing: 0.08em; }
+.gve-brand-name { color: var(--text-muted); font-size: 12px; }
+
+.gve-flow-name {
+  min-width: 180px;
+  max-width: 360px;
+  flex: 1;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  outline: none;
+  background: transparent;
+  color: var(--text);
+  padding: 7px 9px;
+  font-weight: 600;
+}
+
+.gve-flow-name:hover,
+.gve-flow-name:focus {
+  border-color: var(--border);
+  background: var(--panel-2);
+}
+
+.gve-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.gve-header-divider { width: 1px; height: 24px; margin: 0 3px; background: var(--border); }
+
+.gve-palette,
+.gve-canvas,
+.gve-inspector,
+.gve-xmlpane {
+  min-width: 0;
+  min-height: 0;
+  background: var(--panel);
+}
+
+.gve-palette { grid-column: 1; grid-row: 2; border-right: 1px solid var(--border); }
+.gve-canvas { grid-column: 2; grid-row: 2; background: var(--bg); }
+.gve-inspector { grid-column: 3; grid-row: 2; border-left: 1px solid var(--border); }
+.gve-xmlpane { grid-column: 1 / -1; grid-row: 3; border-top: 1px solid var(--border); background: var(--panel-2); }
