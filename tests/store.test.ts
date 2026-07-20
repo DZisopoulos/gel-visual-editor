@@ -38,6 +38,14 @@ describe('store', () => {
     const s = useGve.getState()
     expect(s.past).toHaveLength(0); expect(s.dirty).toBe(false); expect(s.filePath).toBe('C:/x.gve')
   })
+  it('updateParameters replaces parameters and snapshots the flow', () => {
+    const parameters = [{ name: 'projectId', type: 'string' as const, default: '' }]
+    useGve.getState().updateParameters(parameters)
+    const s = useGve.getState()
+    expect(s.flow.parameters).toEqual(parameters)
+    expect(s.past).toHaveLength(1)
+    expect(s.dirty).toBe(true)
+  })
   it('rejected self moves do not dirty the flow or add history', () => {
     useGve.getState().addBlock('for-each', { parentId: null, index: 0 })
     const before = useGve.getState()

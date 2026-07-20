@@ -1,5 +1,6 @@
 import Canvas from './components/Canvas'
 import Header from './components/Header'
+import Inspector from './components/Inspector'
 import Palette from './components/Palette'
 
 function App(): React.JSX.Element {
@@ -8,7 +9,7 @@ function App(): React.JSX.Element {
       <Header />
       <Palette />
       <Canvas />
-      <aside className="gve-inspector" aria-label="Inspector" />
+      <Inspector />
       <section className="gve-xmlpane" aria-label="XML preview" />
     </div>
   )

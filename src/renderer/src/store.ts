@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { Flow, FlowMeta } from '../../shared/flow'
+import type { Flow, FlowMeta, FlowParameter } from '../../shared/flow'
 import { createEmptyFlow } from '../../shared/flow'
 import { insertBlock, moveBlock, removeBlock, findBlock, type DropTarget } from '../../shared/tree'
 import { createBlock } from '../../shared/registry'
@@ -12,6 +12,7 @@ export interface GveState {
   addBlock(type: string, target: DropTarget): void
   updateProps(id: string, patch: Record<string, string>): void
   updateMeta(patch: Partial<FlowMeta>): void
+  updateParameters(params: FlowParameter[]): void
   move(id: string, target: DropTarget): void
   remove(id: string): void
   toggleEnabled(id: string): void
@@ -43,6 +44,7 @@ export const useGve = create<GveState>((set) => ({
     return found ? { ...snap(s), flow: { ...s.flow, blocks } } : s
   }),
   updateMeta: patch => set(s => ({ ...snap(s), flow: { ...s.flow, meta: { ...s.flow.meta, ...patch } } })),
+  updateParameters: parameters => set(s => ({ ...snap(s), flow: { ...s.flow, parameters } })),
   move: (id, target) => set(s => {
     const blocks = moveBlock(s.flow.blocks, id, target)
     return blocks === s.flow.blocks ? s : { ...snap(s), flow: { ...s.flow, blocks } }
