@@ -1,4 +1,4 @@
-# tmp-scaffold
+# GVE — GEL Visual Editor
 
 An Electron application with React and TypeScript
 
