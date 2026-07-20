@@ -1,8 +1,14 @@
-import { contextBridge } from 'electron'
+import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 
-// Custom APIs for renderer
-const api = {}
+const gve = {
+  openFlow: (): Promise<{ filePath: string; content: string } | null> =>
+    ipcRenderer.invoke('gve:openFlow'),
+  saveFlow: (suggestedName: string, content: string, existingPath: string | null): Promise<string | null> =>
+    ipcRenderer.invoke('gve:saveFlow', suggestedName, content, existingPath),
+  exportXml: (suggestedName: string, content: string): Promise<string | null> =>
+    ipcRenderer.invoke('gve:exportXml', suggestedName, content)
+}
 
 // Use `contextBridge` APIs to expose Electron APIs to
 // renderer only if context isolation is enabled, otherwise
@@ -10,7 +16,7 @@ const api = {}
 if (process.contextIsolated) {
   try {
     contextBridge.exposeInMainWorld('electron', electronAPI)
-    contextBridge.exposeInMainWorld('api', api)
+    contextBridge.exposeInMainWorld('gve', gve)
   } catch (error) {
     console.error(error)
   }
@@ -18,5 +24,5 @@ if (process.contextIsolated) {
   // @ts-ignore (define in dts)
   window.electron = electronAPI
   // @ts-ignore (define in dts)
-  window.api = api
+  window.gve = gve
 }

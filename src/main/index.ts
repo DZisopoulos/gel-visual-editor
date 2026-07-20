@@ -1,5 +1,6 @@
-import { app, shell, BrowserWindow, ipcMain } from 'electron'
+import { app, shell, BrowserWindow, ipcMain, dialog } from 'electron'
 import { join } from 'path'
+import { readFile, writeFile } from 'node:fs/promises'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 
@@ -49,8 +50,48 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window)
   })
 
-  // IPC test
-  ipcMain.on('ping', () => console.log('pong'))
+  ipcMain.handle('gve:openFlow', async () => {
+    const result = await dialog.showOpenDialog({
+      properties: ['openFile'],
+      filters: [
+        { name: 'GVE Flow', extensions: ['gve'] },
+        { name: 'GVE Export', extensions: ['xml'] }
+      ]
+    })
+    if (result.canceled || result.filePaths.length === 0) return null
+
+    const filePath = result.filePaths[0]
+    return { filePath, content: await readFile(filePath, 'utf8') }
+  })
+
+  ipcMain.handle(
+    'gve:saveFlow',
+    async (_event, suggestedName: string, content: string, existingPath: string | null) => {
+      let filePath = existingPath
+      if (!filePath) {
+        const result = await dialog.showSaveDialog({
+          defaultPath: withExtension(suggestedName, '.gve'),
+          filters: [{ name: 'GVE Flow', extensions: ['gve'] }]
+        })
+        if (result.canceled || !result.filePath) return null
+        filePath = result.filePath
+      }
+
+      await writeFile(filePath, content, 'utf8')
+      return filePath
+    }
+  )
+
+  ipcMain.handle('gve:exportXml', async (_event, suggestedName: string, content: string) => {
+    const result = await dialog.showSaveDialog({
+      defaultPath: withExtension(suggestedName, '.xml'),
+      filters: [{ name: 'GVE Export', extensions: ['xml'] }]
+    })
+    if (result.canceled || !result.filePath) return null
+
+    await writeFile(result.filePath, content, 'utf8')
+    return result.filePath
+  })
 
   createWindow()
 
@@ -60,6 +101,11 @@ app.whenReady().then(() => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })
 })
+
+function withExtension(fileName: string, extension: '.gve' | '.xml'): string {
+  const safeName = fileName.trim() || 'Untitled Flow'
+  return safeName.toLowerCase().endsWith(extension) ? safeName : `${safeName}${extension}`
+}
 
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
