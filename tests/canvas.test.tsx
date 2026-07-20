@@ -17,6 +17,13 @@ describe('canvas', () => {
     fireEvent.click(screen.getByText('Log Message'))
     expect(useGve.getState().selectedId).toBe(useGve.getState().flow.blocks[0].id)
   })
+  it('clears selection when the canvas background is clicked', () => {
+    useGve.getState().addBlock('log-message', { parentId: null, index: 0 })
+    useGve.getState().select(useGve.getState().flow.blocks[0].id)
+    render(<Canvas />)
+    fireEvent.click(screen.getByLabelText('Flow canvas'))
+    expect(useGve.getState().selectedId).toBeNull()
+  })
   it('drop of a palette item inserts at the zone index', () => {
     render(<Canvas />)
     const zones = document.querySelectorAll('.gve-dropzone')

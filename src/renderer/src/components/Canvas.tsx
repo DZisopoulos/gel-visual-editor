@@ -61,9 +61,10 @@ function BlockList({ blocks, parentId }: { blocks: Block[]; parentId: string | n
 
 function Canvas(): React.JSX.Element {
   const flow = useGve(s => s.flow)
+  const select = useGve(s => s.select)
 
   return (
-    <main className="gve-canvas" aria-label="Flow canvas">
+    <main className="gve-canvas" aria-label="Flow canvas" onClick={() => select(null)}>
       <div className="gve-canvas-scroll">
         <div className="gve-flow-cap gve-flow-start">
           <span>START</span>
