@@ -119,7 +119,11 @@ Live validation (debounced on every edit), three layers:
 
 **Parked:** import assistant for foreign GEL; live Clarity connectivity (metadata autocomplete, test execution, online validation); team features.
 
-## 6. Testing Strategy
+## 6. Future Features
+
+**Auto-generated documentation.** Walk the flow tree and produce a polished, client-ready technical design document (Word/PDF/HTML): the script's purpose, parameters, step-by-step logic narrative, SQL listings, email templates, and a flow diagram. Because it is generated from the flow itself, the documentation is always current — a standing pain point for consultancies, where hand-written technical docs rot the moment the script changes. Cheap to build once the app exists: the structured block tree already holds everything needed; this is a rendering pass over it.
+
+## 7. Testing Strategy
 
 - **Registry/generator unit tests:** for each block type, props → expected GEL fragment; namespace assembly; enabled/disabled output; pretty-print stability.
 - **Round-trip tests:** flow → export → re-open → deep-equal original flow; drift detection triggers on tampered body.
