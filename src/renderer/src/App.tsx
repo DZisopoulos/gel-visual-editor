@@ -2,6 +2,7 @@ import Canvas from './components/Canvas'
 import Header from './components/Header'
 import Inspector from './components/Inspector'
 import Palette from './components/Palette'
+import XmlPreview from './components/XmlPreview'
 
 function App(): React.JSX.Element {
   return (
@@ -10,7 +11,7 @@ function App(): React.JSX.Element {
       <Palette />
       <Canvas />
       <Inspector />
-      <section className="gve-xmlpane" aria-label="XML preview" />
+      <XmlPreview />
     </div>
   )
 }

@@ -25,6 +25,7 @@
     "@electron-toolkit/preload": "^3.0.2",
     "@electron-toolkit/utils": "^4.0.0",
     "@monaco-editor/react": "^4.7.0",
+    "monaco-editor": "^0.56.0",
     "zustand": "^5.0.14"
   },
   "devDependencies": {
