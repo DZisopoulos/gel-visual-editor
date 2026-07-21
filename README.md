@@ -19,6 +19,8 @@ Compose nested logic with blocks, inspect the generated XML, validate before exp
 
 > GVE is an offline-first desktop editor for designing, reviewing, and exporting GEL scripts. It is free for personal, educational, and other non-commercial use. Commercial use requires written permission.
 
+> **Versioning:** the current application/package version is `1.0.0`; the published distribution channel is the `Alpha 0.1` release (`alpha-0.1`).
+
 ## At a glance
 
 |                           | What you get                                                                                                                             |
