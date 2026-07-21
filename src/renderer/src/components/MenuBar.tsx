@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { createEmptyFlow } from '../../../shared/flow'
 import { useGve } from '../store'
+import Header from './Header'
 
 type MenuId = 'file' | 'edit' | 'view' | 'help'
 interface MenuBarProps {
@@ -79,6 +80,7 @@ function MenuBar({ activeView, onViewChange, onOpenCommandPalette, onAbout, onRe
           </div>
         ))}
       </div>
+      <Header />
       <button type="button" className="gve-menubar-command" onClick={onOpenCommandPalette} title="Open command palette (Ctrl/Cmd K)">
         <span>Search commands</span><kbd>Ctrl K</kbd>
       </button>

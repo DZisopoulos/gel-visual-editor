@@ -1137,6 +1137,28 @@ button, input, select, textarea { transition: border-color 160ms ease, backgroun
 .gve-shell-focus .gve-palette,
 .gve-shell-focus .gve-inspector { visibility: hidden; pointer-events: none; }
 .gve-shell-focus .gve-header { grid-column: 1 / -1; }
+
+/* Keep the application menu, flow toolbar, and command search in one row. */
+.gve-app { grid-template-rows: minmax(0, 1fr); }
+.gve-palette,
+.gve-center,
+.gve-inspector { grid-row: 1; }
+.gve-menubar {
+  flex-basis: 56px;
+  justify-content: flex-start;
+  gap: 10px;
+}
+.gve-menubar .gve-menu-groups { flex: 0 0 auto; }
+.gve-menubar .gve-header {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+.gve-menubar .gve-flow-name { min-width: 120px; }
+.gve-menubar .gve-header-actions { flex: 0 0 auto; }
+.gve-menubar-command { flex: 0 0 auto; }
 .gve-canvas-tool-active { border-color: var(--accent) !important; background: color-mix(in srgb, var(--accent) 14%, var(--panel-2)) !important; color: var(--accent) !important; }
 .gve-canvas-toolbar-divider { width: 1px; margin: 4px 2px; background: var(--border); }
 

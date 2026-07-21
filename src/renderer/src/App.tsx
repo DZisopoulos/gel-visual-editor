@@ -5,7 +5,6 @@ import AboutDialog from './components/AboutDialog'
 import MenuBar from './components/MenuBar'
 import ValidationView from './components/ValidationView'
 import Footer from './components/Footer'
-import Header from './components/Header'
 import Inspector from './components/Inspector'
 import Palette from './components/Palette'
 import XmlPreview from './components/XmlPreview'
@@ -161,7 +160,6 @@ function App(): React.JSX.Element {
         data-app-theme={themePreferences.app}
         style={{ gridTemplateColumns: focusMode ? '0 minmax(0, 1fr) 0' : `${layout.paletteWidth}px minmax(0, 1fr) ${layout.inspectorWidth}px` }}
       >
-        <Header />
         <Palette onResizeStart={(event) => startResize('palette', event)} />
         <div className="gve-center">
           <div className="gve-center-content">
