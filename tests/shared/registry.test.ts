@@ -5,10 +5,16 @@ describe('registry', () => {
   it('registers the complete planned block palette', () => {
     expect(allNodeDefs().map(d => d.type).sort()).toEqual(
       [
-        'case', 'catch', 'choose', 'comment', 'default', 'email', 'file-read', 'file-write',
-        'for-each', 'ftp-transfer', 'http-call', 'include-script', 'log-message', 'otherwise',
-        'raw-gel', 'set-variable', 'soap-invoke', 'sql-query', 'switch', 'try', 'when',
-        'xog-read', 'xog-write'
+        'capture-to-file', 'case', 'catch', 'choose', 'comment', 'current-date', 'default', 'email',
+        'file-read', 'file-write', 'for-each', 'ftp-transfer', 'get-cost-plan-summary', 'get-project-tasks',
+        'get-resource-allocation', 'get-security-group-members', 'get-timesheet-status', 'http-call', 'if',
+        'import-script', 'include-script', 'invoke-method', 'invoke-static', 'log-message',
+        'lookup-project-by-code', 'lookup-resource-by-username', 'method-arg', 'new-object', 'otherwise',
+        'print-expression', 'raw-gel', 'release-datasource', 'remove-variable', 'set-custom-field',
+        'set-variable', 'sleep', 'soap-invoke', 'sql-query', 'switch', 'translate-lookup-value', 'try',
+        'use-bean', 'when', 'while', 'xog-read', 'xog-read-custom-object', 'xog-read-obs', 'xog-read-project',
+        'xog-read-resource', 'xog-write', 'xog-write-custom-object', 'xog-write-obs', 'xog-write-project',
+        'xog-write-resource'
       ])
   })
   it('throws on unknown type', () => { expect(() => getNodeDef('nope')).toThrow() })

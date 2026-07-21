@@ -109,15 +109,17 @@ The editable flow and exported XML are linked by a versioned `GVE-FLOW` marker. 
 
 ### Block palette
 
-The palette is searchable, scrollable, keyboard accessible, and organized into collapsible categories. It currently includes 23 block types:
+The palette is searchable, scrollable, keyboard accessible, and organized into collapsible categories. It currently includes 54 block types:
 
-| Category        | Blocks                                                                          |
-| --------------- | ------------------------------------------------------------------------------- |
-| **Core**        | Set Variable, For Each, Choose, When, Otherwise, Switch, Case, Default, Comment |
-| **Data**        | SQL Query                                                                       |
-| **Integration** | HTTP Call, SOAP Invoke, FTP Transfer, File Read, File Write                     |
-| **Clarity**     | Send Email, Log Message, XOG Read, XOG Write                                    |
-| **Advanced**    | Try, Catch, Include Script, Raw GEL                                             |
+| Category        | Blocks                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Core**        | Set Variable, For Each, Choose, When, Otherwise, Switch, Case, Default, Comment, If, While, Remove Variable, New Object, Invoke Method, Invoke Static Method, Method Argument, Use Bean, Capture Output to File, Import Script, Print Expression                                                                                                                                                                                                                    |
+| **Data**        | SQL Query                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| **Integration** | HTTP Call, SOAP Invoke, FTP Transfer, File Read, File Write                                                                                                                                                                                                                                                                                                                                                                                                         |
+| **Clarity**     | Send Email, Log Message, XOG Read, XOG Write, Release Datasource, Current Date, Sleep, XOG Read Project, XOG Write Project, XOG Read Resource, XOG Write Resource, XOG Read OBS, XOG Write OBS, XOG Read Custom Object, XOG Write Custom Object, Set Custom Field, Lookup Resource by Username, Lookup Project by Code, Get Project Tasks, Get Resource Allocation, Get Timesheet Status, Get Cost Plan Summary, Translate Lookup Value, Get Security Group Members |
+| **Advanced**    | Try, Catch, Include Script, Raw GEL                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+
+The "Core" additions map onto real Jelly control-flow tags (`core:if`, `core:while`, `core:new`, `core:invoke`, `core:invokeStatic`, `core:useBean`, `core:file`, `core:import`, `core:expr`, `core:arg`, `core:remove`) rather than inventing new tag surfaces. The Clarity domain blocks (XOG object presets, resource/project/timesheet/OBS lookups, custom-field writes) are thin, labeled convenience wrappers over the same `xog:`/`sql:`/`gel:` emitters already used by XOG Read/Write and SQL Query — the SQL-backed lookups ship with illustrative example queries commented to be verified against your own Clarity PPM schema/version.
 
 ### Inspector and variables
 
