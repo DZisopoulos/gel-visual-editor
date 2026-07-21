@@ -6,6 +6,9 @@ describe('app shell', () => {
   it('renders the shell with flow and XML preview tabs', () => {
     render(<App />)
     expect(document.querySelector('.gve-header')).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Minimize' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Maximize' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Close' })).toBeTruthy()
     expect(document.querySelector('.gve-palette')).toBeTruthy()
     expect(document.querySelector('.gve-canvas')).toBeTruthy()
     expect(document.querySelector('.gve-inspector')).toBeTruthy()

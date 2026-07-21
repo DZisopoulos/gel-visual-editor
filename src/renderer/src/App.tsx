@@ -4,6 +4,7 @@ import Header from './components/Header'
 import Inspector from './components/Inspector'
 import Palette from './components/Palette'
 import XmlPreview from './components/XmlPreview'
+import WindowTitleBar from './components/WindowTitleBar'
 import { getTheme, loadThemePreferences, saveThemePreferences, type ThemeId, type ThemePreferences } from './theme'
 
 function App(): React.JSX.Element {
@@ -17,7 +18,9 @@ function App(): React.JSX.Element {
   }
 
   return (
-    <div className="gve-app" data-app-theme={themePreferences.app} style={getTheme(themePreferences.app).appVars as React.CSSProperties}>
+    <div className="gve-shell" data-app-theme={themePreferences.app} style={getTheme(themePreferences.app).appVars as React.CSSProperties}>
+      <WindowTitleBar />
+      <div className="gve-app" data-app-theme={themePreferences.app}>
       <Header
         appTheme={themePreferences.app}
         xmlTheme={themePreferences.xml}
@@ -51,6 +54,7 @@ function App(): React.JSX.Element {
         </div>
       </div>
       <Inspector />
+      </div>
     </div>
   )
 }

@@ -7,7 +7,13 @@ const gve = {
   saveFlow: (suggestedName: string, content: string, existingPath: string | null): Promise<string | null> =>
     ipcRenderer.invoke('gve:saveFlow', suggestedName, content, existingPath),
   exportXml: (suggestedName: string, content: string): Promise<string | null> =>
-    ipcRenderer.invoke('gve:exportXml', suggestedName, content)
+    ipcRenderer.invoke('gve:exportXml', suggestedName, content),
+  window: {
+    minimize: (): Promise<void> => ipcRenderer.invoke('gve:window:minimize'),
+    toggleMaximize: (): Promise<boolean> => ipcRenderer.invoke('gve:window:toggle-maximize'),
+    isMaximized: (): Promise<boolean> => ipcRenderer.invoke('gve:window:is-maximized'),
+    close: (): Promise<void> => ipcRenderer.invoke('gve:window:close')
+  }
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to

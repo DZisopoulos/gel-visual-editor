@@ -10,6 +10,8 @@ function createWindow(): void {
     width: 900,
     height: 670,
     show: false,
+    frame: false,
+    backgroundColor: '#0F1218',
     autoHideMenuBar: true,
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
@@ -91,6 +93,26 @@ app.whenReady().then(() => {
 
     await writeFile(result.filePath, content, 'utf8')
     return result.filePath
+  })
+
+  ipcMain.handle('gve:window:minimize', event => {
+    BrowserWindow.fromWebContents(event.sender)?.minimize()
+  })
+
+  ipcMain.handle('gve:window:toggle-maximize', event => {
+    const window = BrowserWindow.fromWebContents(event.sender)
+    if (!window) return false
+    if (window.isMaximized()) window.unmaximize()
+    else window.maximize()
+    return window.isMaximized()
+  })
+
+  ipcMain.handle('gve:window:is-maximized', event => {
+    return BrowserWindow.fromWebContents(event.sender)?.isMaximized() ?? false
+  })
+
+  ipcMain.handle('gve:window:close', event => {
+    BrowserWindow.fromWebContents(event.sender)?.close()
   })
 
   createWindow()
