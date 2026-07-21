@@ -5,7 +5,12 @@ import { escapeAttr } from './xmlutil'
 const NS_URI: Record<string, string> = {
   gel: 'jelly:com.niku.union.gel.GELTagLibrary',
   core: 'jelly:core',
-  sql: 'jelly:sql'
+  file: 'jelly:com.niku.union.gel.FileTagLibrary',
+  ftp: 'jelly:com.niku.union.gel.FTPTagLibrary',
+  http: 'jelly:com.niku.union.gel.HTTPTagLibrary',
+  soap: 'jelly:com.niku.union.gel.SOAPTagLibrary',
+  sql: 'jelly:sql',
+  xog: 'jelly:com.niku.union.gel.XOGTagLibrary'
 }
 
 function collectNamespaces(blocks: Block[], acc: Set<string>): void {

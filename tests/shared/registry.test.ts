@@ -2,9 +2,14 @@ import { describe, it, expect } from 'vitest'
 import { getNodeDef, allNodeDefs, createBlock } from '../../src/shared/registry'
 
 describe('registry', () => {
-  it('has exactly the 5 phase-1 blocks', () => {
+  it('registers the complete planned block palette', () => {
     expect(allNodeDefs().map(d => d.type).sort()).toEqual(
-      ['for-each', 'log-message', 'raw-gel', 'set-variable', 'sql-query'])
+      [
+        'case', 'catch', 'choose', 'comment', 'default', 'email', 'file-read', 'file-write',
+        'for-each', 'ftp-transfer', 'http-call', 'include-script', 'log-message', 'otherwise',
+        'raw-gel', 'set-variable', 'soap-invoke', 'sql-query', 'switch', 'try', 'when',
+        'xog-read', 'xog-write'
+      ])
   })
   it('throws on unknown type', () => { expect(() => getNodeDef('nope')).toThrow() })
   it('createBlock fills defaults and container children', () => {
