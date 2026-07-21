@@ -1,9 +1,10 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { useGve } from '../src/renderer/src/store'
 import { createEmptyFlow } from '../src/shared/flow'
 
 describe('store', () => {
   beforeEach(() => { useGve.getState().loadFlow(createEmptyFlow('T'), null) })
+  afterEach(() => { vi.useRealTimers() })
 
   it('addBlock inserts, selects and marks dirty', () => {
     useGve.getState().addBlock('log-message', { parentId: null, index: 0 })
@@ -61,6 +62,60 @@ describe('store', () => {
     expect(after.future).toBe(saved.future)
     expect(after.dirty).toBe(false)
   })
+  it('coalesces an unbroken run of edits to one field into one undo entry', () => {
+    vi.useFakeTimers()
+    useGve.getState().addBlock('log-message', { parentId: null, index: 0 })
+    const id = useGve.getState().flow.blocks[0].id
+    const afterAdd = useGve.getState().past.length
+
+    for (const message of ['h', 'he', 'hel', 'hell', 'hello']) {
+      useGve.getState().updateProps(id, { message })
+      vi.advanceTimersByTime(50)
+    }
+
+    expect(useGve.getState().past).toHaveLength(afterAdd + 1)
+    useGve.getState().undo()
+    expect(useGve.getState().flow.blocks[0].props.message).toBe('')
+  })
+
+  it('starts a new undo entry when the edited field changes', () => {
+    vi.useFakeTimers()
+    useGve.getState().addBlock('log-message', { parentId: null, index: 0 })
+    const id = useGve.getState().flow.blocks[0].id
+    const afterAdd = useGve.getState().past.length
+
+    useGve.getState().updateProps(id, { message: 'hello' })
+    useGve.getState().updateProps(id, { stepName: 'Greet' })
+
+    expect(useGve.getState().past).toHaveLength(afterAdd + 2)
+  })
+
+  it('starts a new undo entry once the coalesce window lapses', () => {
+    vi.useFakeTimers()
+    useGve.getState().addBlock('log-message', { parentId: null, index: 0 })
+    const id = useGve.getState().flow.blocks[0].id
+    const afterAdd = useGve.getState().past.length
+
+    useGve.getState().updateProps(id, { message: 'hello' })
+    vi.advanceTimersByTime(2000)
+    useGve.getState().updateProps(id, { message: 'hello there' })
+
+    expect(useGve.getState().past).toHaveLength(afterAdd + 2)
+  })
+
+  it('a structural edit breaks the run so typing after it is not folded in', () => {
+    vi.useFakeTimers()
+    useGve.getState().addBlock('log-message', { parentId: null, index: 0 })
+    const id = useGve.getState().flow.blocks[0].id
+
+    useGve.getState().updateProps(id, { message: 'hello' })
+    useGve.getState().toggleEnabled(id)
+    const afterToggle = useGve.getState().past.length
+    useGve.getState().updateProps(id, { message: 'hello again' })
+
+    expect(useGve.getState().past).toHaveLength(afterToggle + 1)
+  })
+
   it('actions targeting missing blocks are no-ops', () => {
     const before = useGve.getState()
     before.updateProps('missing', { message: 'nope' })

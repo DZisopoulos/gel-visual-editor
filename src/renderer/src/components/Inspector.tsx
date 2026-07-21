@@ -27,7 +27,8 @@ function Inspector({
 
   const updateParameter = (index: number, patch: Partial<FlowParameter>): void => {
     updateParameters(
-      flow.parameters.map((parameter, i) => (i === index ? { ...parameter, ...patch } : parameter))
+      flow.parameters.map((parameter, i) => (i === index ? { ...parameter, ...patch } : parameter)),
+      `parameter:${index}:${Object.keys(patch).join(',')}`
     )
   }
 
