@@ -13,11 +13,11 @@ Compose nested logic with blocks, inspect the generated XML, validate before exp
     <img src="https://img.shields.io/badge/Electron-39-47848f?logo=electron&logoColor=white" alt="Electron 39" />
     <img src="https://img.shields.io/badge/React-18-149eca?logo=react&logoColor=white" alt="React 18" />
     <img src="https://img.shields.io/badge/TypeScript-5.9-3178c6?logo=typescript&logoColor=white" alt="TypeScript 5.9" />
-    <a href="LICENSE.md"><img src="https://img.shields.io/badge/license-personal%20%26%20non--commercial-f5b84d" alt="Personal and non-commercial license" /></a>
+    <a href="LICENSE.md"><img src="https://img.shields.io/badge/license-PolyForm%20Noncommercial-f5b84d" alt="PolyForm Noncommercial license" /></a>
   </p>
 </div>
 
-> GVE is an offline-first desktop editor for designing, reviewing, and exporting GEL scripts. It is free for personal, educational, and other non-commercial use. Commercial use requires written permission.
+> GVE is an offline-first desktop editor for designing, reviewing, and exporting GEL scripts. It is available under PolyForm Noncommercial 1.0.0: non-commercial use, copying, modification, and distribution are permitted under its terms; commercial rights are not granted.
 
 > **Versioning:** the current application/package version is `1.0.0`; the published distribution channel is the `Alpha 0.1` release (`alpha-0.1`).
 
@@ -266,11 +266,11 @@ Please keep changes focused and run the verification commands above before submi
 
 ## License
 
-GVE is released under the [GVE Personal Use License](LICENSE.md).
+GVE is released under the [PolyForm Noncommercial License 1.0.0](LICENSE.md).
 
-You may use it free of charge for personal, educational, and other non-commercial purposes. Commercial use, redistribution, resale, sublicensing, incorporation into a paid product or service, or any other use intended to generate revenue requires prior written permission from Dimitrios Zisopoulos.
+The license permits use, copying, modification, and distribution for permitted non-commercial purposes. It does not grant commercial use, sublicensing, or transfer rights. See the official [PolyForm Noncommercial terms](https://polyformproject.org/licenses/noncommercial/1.0.0) for the complete license.
 
-Copyright © 2026 Dimitrios Zisopoulos. All rights reserved.
+Copyright © 2026 Dimitrios Zisopoulos.
 
 ## Links
 

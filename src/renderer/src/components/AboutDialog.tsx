@@ -12,9 +12,9 @@ function AboutDialog({ open, onClose }: AboutDialogProps): React.JSX.Element | n
         </div>
         <div className="gve-about-body">
           <div className="gve-about-meta"><span>Version 1.0.0</span><span>Created by Dimitrios Zisopoulos</span></div>
-          <h3>Personal Use License</h3>
-          <p>GVE is free for personal, educational, and non-commercial use.</p>
-          <p>Commercial use, redistribution, resale, incorporation into a paid product or service, or any use intended to generate money requires prior written permission from the copyright holder.</p>
+          <h3>PolyForm Noncommercial 1.0.0</h3>
+          <p>GVE may be used, copied, modified, and distributed for permitted non-commercial purposes.</p>
+          <p>Commercial use, sublicensing, and transfer rights are not granted under these terms. See LICENSE.md for the complete license.</p>
           <p className="gve-about-muted">All rights reserved. The software is provided as-is, without warranty.</p>
         </div>
         <div className="gve-about-actions"><button type="button" onClick={onClose}>Done</button></div>
