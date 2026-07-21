@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { allNodeDefs } from '../../../shared/registry'
 import type { NodeDefinition } from '../../../shared/registry/types'
 import { useGve } from '../store'
@@ -10,18 +11,43 @@ function Palette(): React.JSX.Element {
   const flow = useGve(s => s.flow)
   const addBlock = useGve(s => s.addBlock)
   const definitions = allNodeDefs()
+  const [query, setQuery] = useState('')
+  const [collapsed, setCollapsed] = useState<Partial<Record<NodeDefinition['category'], boolean>>>({})
+  const normalizedQuery = query.trim().toLowerCase()
 
   return (
     <aside className="gve-palette" aria-label="Block palette">
       <div className="gve-panel-title">Blocks</div>
+      <div className="gve-palette-search">
+        <input
+          type="search"
+          aria-label="Search blocks"
+          placeholder="Search blocks..."
+          value={query}
+          onChange={event => setQuery(event.target.value)}
+        />
+      </div>
       <div className="gve-palette-groups">
         {categories.map(category => {
-          const entries = definitions.filter(def => def.category === category)
+          const entries = definitions.filter(def => {
+            if (def.category !== category) return false
+            if (!normalizedQuery) return true
+            return `${def.name} ${def.type}`.toLowerCase().includes(normalizedQuery)
+          })
           if (entries.length === 0) return null
+          const isCollapsed = Boolean(collapsed[category]) && !normalizedQuery
           return (
             <section className="gve-palette-group" key={category}>
-              <div className="gve-palette-label">{category}</div>
-              {entries.map(def => (
+              <button
+                type="button"
+                className="gve-palette-label"
+                aria-expanded={!isCollapsed}
+                onClick={() => setCollapsed(value => ({ ...value, [category]: !value[category] }))}
+              >
+                <span>{category}</span>
+                <span className="gve-palette-chevron" aria-hidden="true">{isCollapsed ? '▸' : '▾'}</span>
+              </button>
+              {!isCollapsed && entries.map(def => (
                 <div
                   className="gve-palette-row"
                   key={def.type}

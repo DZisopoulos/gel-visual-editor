@@ -28,4 +28,26 @@ describe('palette', () => {
     fireEvent.keyDown(log, { key: 'Enter' })
     expect(useGve.getState().flow.blocks[0].type).toBe('log-message')
   })
+
+  it('filters blocks and expands matching categories while searching', () => {
+    useGve.getState().loadFlow(createEmptyFlow('T'), null)
+    render(<Palette />)
+    fireEvent.change(screen.getByLabelText('Search blocks'), { target: { value: 'xog' } })
+
+    expect(screen.getByText('XOG Read')).toBeTruthy()
+    expect(screen.getByText('XOG Write')).toBeTruthy()
+    expect(screen.queryByText('Set Variable')).toBeNull()
+  })
+
+  it('collapses and reopens a category', () => {
+    useGve.getState().loadFlow(createEmptyFlow('T'), null)
+    render(<Palette />)
+    const core = screen.getByRole('button', { name: /core/i })
+    expect(core.getAttribute('aria-expanded')).toBe('true')
+    fireEvent.click(core)
+    expect(core.getAttribute('aria-expanded')).toBe('false')
+    expect(screen.queryByText('Set Variable')).toBeNull()
+    fireEvent.click(core)
+    expect(screen.getByText('Set Variable')).toBeTruthy()
+  })
 })
