@@ -1,8 +1,14 @@
 export function escapeXml(text: string): string {
   return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 }
+// Whitespace must be encoded: XML parsers normalise raw newlines and tabs inside
+// attribute values to spaces, which silently rewrites the value on the way out.
 export function escapeAttr(text: string): string {
-  return escapeXml(text).replace(/"/g, '&quot;')
+  return escapeXml(text)
+    .replace(/"/g, '&quot;')
+    .replace(/\r/g, '&#13;')
+    .replace(/\n/g, '&#10;')
+    .replace(/\t/g, '&#9;')
 }
 export function fnv1a(text: string): string {
   let hash = 0x811c9dc5

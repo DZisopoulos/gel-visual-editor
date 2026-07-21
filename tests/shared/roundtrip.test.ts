@@ -37,6 +37,33 @@ describe('roundtrip', () => {
     expect(() => importXml('<gel:script/>')).toThrowError(GveImportError)
     try { importXml('<gel:script/>') } catch (e) { expect((e as GveImportError).reason).toBe('no-marker') }
   })
+  it('imports an export whose line endings were converted to CRLF', () => {
+    const f = flowWithSql()
+    const res = importXml(exportXml(f).replace(/\n/g, '\r\n'))
+    expect(res.flow).toEqual(f)
+    expect(res.drift).toBe(false)
+  })
+  it('rejects an embedded flow using an unregistered block type', () => {
+    const f = flowWithSql()
+    const xml = exportXml(f).replace('"sql-query"', '"future-block"')
+    try {
+      importXml(xml)
+      expect.unreachable('expected an import error')
+    } catch (e) {
+      expect((e as GveImportError).reason).toBe('bad-payload')
+      expect((e as GveImportError).message).toContain('future-block')
+    }
+  })
+  it('rejects an embedded flow whose blocks are malformed', () => {
+    const f = flowWithSql()
+    const xml = exportXml(f).replace('"enabled": true', '"enabled": "yes"')
+    try {
+      importXml(xml)
+      expect.unreachable('expected an import error')
+    } catch (e) {
+      expect((e as GveImportError).reason).toBe('bad-payload')
+    }
+  })
   it('throws bad-payload for corrupted JSON', () => {
     const broken = '<!-- GVE-FLOW v1.0\n{not json\nBODY-HASH:00000000\n-->\n<gel:script/>'
     try { importXml(broken) } catch (e) { expect((e as GveImportError).reason).toBe('bad-payload') }

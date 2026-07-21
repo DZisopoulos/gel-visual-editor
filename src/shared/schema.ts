@@ -1,9 +1,13 @@
 import type { Block, Flow, FlowMeta, FlowParameter } from './flow'
+import { getNodeDef } from './registry'
 
 function isRecord(value: unknown): value is Record<string, unknown> { return Boolean(value) && typeof value === 'object' && !Array.isArray(value) }
 
 function parseBlock(value: unknown): Block {
   if (!isRecord(value) || typeof value.id !== 'string' || typeof value.type !== 'string' || typeof value.enabled !== 'boolean' || !isRecord(value.props)) throw new Error('A block has an invalid shape.')
+  // Reject unregistered types here: the canvas, inspector and generator all call
+  // getNodeDef without a guard, so an unknown type would throw mid-render.
+  try { getNodeDef(value.type) } catch { throw new Error(`The block type “${value.type}” is not supported by this version of GVE.`) }
   const block: Block = { id: value.id, type: value.type, props: Object.fromEntries(Object.entries(value.props).map(([key, entry]) => [key, String(entry ?? '')])), enabled: value.enabled }
   if (value.children !== undefined) {
     if (!Array.isArray(value.children)) throw new Error(`Children for ${value.type} must be an array.`)

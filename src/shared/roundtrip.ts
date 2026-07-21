@@ -1,5 +1,6 @@
 import type { Flow } from './flow'
 import { generateGel } from './generate'
+import { parseFlowDocument } from './schema'
 import { decodeCommentJson, encodeCommentJson, fnv1a } from './xmlutil'
 
 export interface ImportResult { flow: Flow; drift: boolean }
@@ -16,23 +17,30 @@ export function exportXml(flow: Flow): string {
 }
 
 export function importXml(text: string): ImportResult {
-  if (!text.startsWith(MARKER_START)) {
+  // Exports are written with LF, but any Windows editor that touches the file
+  // rewrites them as CRLF. Normalise first so the marker, terminator and body
+  // hash all still match a file that has merely been opened and saved.
+  const normalized = text.replace(/\r\n/g, '\n')
+  if (!normalized.startsWith(MARKER_START)) {
     throw new GveImportError('no-marker', 'This XML was not exported by GVE (no GVE-FLOW marker found).')
   }
-  const end = text.indexOf('\n-->\n')
+  const end = normalized.indexOf('\n-->\n')
   if (end === -1) throw new GveImportError('bad-payload', 'GVE-FLOW marker is not terminated.')
-  const inner = text.slice(MARKER_START.length, end)
+  const inner = normalized.slice(MARKER_START.length, end)
   const hashLine = inner.lastIndexOf('\nBODY-HASH:')
   if (hashLine === -1) throw new GveImportError('bad-payload', 'GVE-FLOW marker is missing its body hash.')
   const jsonText = inner.slice(0, hashLine)
   const storedHash = inner.slice(hashLine + '\nBODY-HASH:'.length).trim()
-  let flow: Flow
-  try { flow = decodeCommentJson(jsonText) as Flow } catch {
+  let payload: unknown
+  try { payload = decodeCommentJson(jsonText) } catch {
     throw new GveImportError('bad-payload', 'Embedded flow definition is not valid JSON.')
   }
-  if (!flow || flow.gveVersion !== '1.0' || !Array.isArray(flow.blocks)) {
-    throw new GveImportError('bad-payload', 'Embedded flow definition has an unexpected shape.')
+  // Validate the embedded document exactly as the .gve path does, so a
+  // hand-edited export cannot put a malformed block into the editor.
+  let flow: Flow
+  try { flow = parseFlowDocument(payload) } catch (error) {
+    throw new GveImportError('bad-payload', error instanceof Error ? error.message : 'Embedded flow definition has an unexpected shape.')
   }
-  const body = text.slice(end + '\n-->\n'.length)
+  const body = normalized.slice(end + '\n-->\n'.length)
   return { flow, drift: fnv1a(body) !== storedHash }
 }

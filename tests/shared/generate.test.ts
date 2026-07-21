@@ -55,4 +55,14 @@ describe('generateGel', () => {
     expect(out).toContain('<!-- disabled: Old- -log')
     expect(out).not.toMatch(/<gel:log[^!]*a--b/)
   })
+
+  it('keeps a multi-line attribute value on one line and encoded', () => {
+    const f = createEmptyFlow('Headers')
+    const call = createBlock('http-call')
+    call.props = { ...call.props, method: 'GET', url: 'http://x', headers: 'A: 1\nB: 2', resultVar: 'r' }
+    f.blocks = [call]
+    const out = generateGel(f)
+    expect(out).toContain('headers="A: 1&#10;B: 2"')
+    expect(out.split('\n').filter(line => line.includes('<http:request'))).toHaveLength(1)
+  })
 })
