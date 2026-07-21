@@ -2,6 +2,9 @@ import { useState } from 'react'
 import { allNodeDefs } from '../../../shared/registry'
 import type { NodeDefinition } from '../../../shared/registry/types'
 import { useGve } from '../store'
+import TemplatePicker from './TemplatePicker'
+import SnippetDialog from './SnippetDialog'
+import type { SavedSnippet } from '../snippets'
 
 const categories: NodeDefinition['category'][] = [
   'core',
@@ -18,8 +21,12 @@ function Palette({
 }): React.JSX.Element {
   const flow = useGve((s) => s.flow)
   const addBlock = useGve((s) => s.addBlock)
+  const loadFlow = useGve((s) => s.loadFlow)
+  const insertExisting = useGve((s) => s.insertExisting)
   const definitions = allNodeDefs()
   const [query, setQuery] = useState('')
+  const [templatesOpen, setTemplatesOpen] = useState(false)
+  const [snippetsOpen, setSnippetsOpen] = useState(false)
   const [collapsed, setCollapsed] = useState<Partial<Record<NodeDefinition['category'], boolean>>>(
     {}
   )
@@ -40,6 +47,8 @@ function Palette({
       />
       <div className="gve-panel-title">Blocks</div>
       <div className="gve-palette-search">
+        <button type="button" className="gve-template-launcher" onClick={() => setTemplatesOpen(true)}><span aria-hidden="true">✦</span> Starter templates</button>
+        <button type="button" className="gve-snippet-launcher" onClick={() => setSnippetsOpen(true)}><span aria-hidden="true">⌑</span> Snippet library</button>
         <input
           type="search"
           aria-label="Search blocks"
@@ -56,6 +65,8 @@ function Palette({
           </button>
         </div>
       </div>
+      <TemplatePicker open={templatesOpen} onClose={() => setTemplatesOpen(false)} onChoose={template => { loadFlow(template.create(), null); setTemplatesOpen(false) }} />
+      <SnippetDialog open={snippetsOpen} onClose={() => setSnippetsOpen(false)} onInsert={(snippet: SavedSnippet) => insertExisting(snippet.block, { parentId: null, index: flow.blocks.length })} />
       <div className="gve-palette-groups">
         {categories.map((category) => {
           const entries = definitions.filter((def) => {

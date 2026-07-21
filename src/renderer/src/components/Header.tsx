@@ -1,6 +1,7 @@
 import { useGve } from '../store'
 import { parseFlowFile, serializeFlow } from '../../../shared/fileio'
 import { exportXml } from '../../../shared/roundtrip'
+import { validateFlow } from '../../../shared/validate'
 
 type IconName = 'undo' | 'redo' | 'open' | 'save' | 'export'
 
@@ -29,6 +30,9 @@ function Header(): React.JSX.Element {
   const redo = useGve(s => s.redo)
 
   const countBlocks = (blocks: typeof flow.blocks): number => blocks.reduce((count, block) => count + 1 + (block.children ? countBlocks(block.children) : 0), 0)
+  const validation = validateFlow(flow)
+  const errorCount = validation.filter(issue => issue.severity === 'error').length
+  const warningCount = validation.filter(issue => issue.severity === 'warning').length
 
   const suggestedName = (): string => flow.meta.name.replace(/[<>:"/\\|?*]/g, '-').trim() || 'Untitled Flow'
 
@@ -61,6 +65,11 @@ function Header(): React.JSX.Element {
   }
 
   const handleExport = async (): Promise<void> => {
+    const issues = validateFlow(flow)
+    const errors = issues.filter(issue => issue.severity === 'error')
+    const warnings = issues.filter(issue => issue.severity === 'warning')
+    if (errors.length > 0) { window.alert(`Export blocked: ${errors.length} validation error${errors.length === 1 ? '' : 's'} must be fixed first.`); return }
+    if (warnings.length > 0 && !window.confirm(`This flow has ${warnings.length} warning${warnings.length === 1 ? '' : 's'}. Export anyway?`)) return
     try {
       await window.gve.exportXml(suggestedName(), exportXml(flow))
     } catch (error) {
@@ -76,9 +85,10 @@ function Header(): React.JSX.Element {
         value={name}
         onChange={event => updateMeta({ name: event.target.value })}
       />
-      <div className={`gve-flow-status${dirty ? ' gve-flow-status-dirty' : ''}`} aria-label={dirty ? 'Unsaved changes' : 'Flow ready'}>
+      <div className={`gve-flow-status${dirty ? ' gve-flow-status-dirty' : ''}${errorCount > 0 ? ' gve-flow-status-error' : ''}`} aria-label={errorCount > 0 ? `${errorCount} validation errors` : dirty ? 'Unsaved changes' : 'Flow ready'}>
         <span className="gve-flow-status-dot" aria-hidden="true" />
-        <span>{dirty ? 'Unsaved changes' : 'Ready'}</span>
+        <span>{errorCount > 0 ? `${errorCount} errors` : dirty ? 'Unsaved changes' : 'Ready'}</span>
+        {warningCount > 0 && <span className="gve-flow-status-count">{warningCount} warnings</span>}
         <span className="gve-flow-status-count">{countBlocks(flow.blocks)} blocks</span>
       </div>
       <div className="gve-header-actions">

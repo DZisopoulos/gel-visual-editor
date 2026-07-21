@@ -4,14 +4,16 @@ import { useGve } from '../store'
 
 type MenuId = 'file' | 'edit' | 'view' | 'help'
 interface MenuBarProps {
-  activeView: 'flow' | 'xml'
-  onViewChange: (view: 'flow' | 'xml') => void
+  activeView: 'flow' | 'xml' | 'validate'
+  onViewChange: (view: 'flow' | 'xml' | 'validate') => void
   onOpenCommandPalette: () => void
   onAbout: () => void
   onResetLayout: () => void
+  focusMode: boolean
+  onToggleFocusMode: () => void
 }
 
-function MenuBar({ activeView, onViewChange, onOpenCommandPalette, onAbout, onResetLayout }: MenuBarProps): React.JSX.Element {
+function MenuBar({ activeView, onViewChange, onOpenCommandPalette, onAbout, onResetLayout, focusMode, onToggleFocusMode }: MenuBarProps): React.JSX.Element {
   const [openMenu, setOpenMenu] = useState<MenuId | null>(null)
   const menuRef = useRef<HTMLDivElement>(null)
   const dirty = useGve(s => s.dirty)
@@ -62,7 +64,9 @@ function MenuBar({ activeView, onViewChange, onOpenCommandPalette, onAbout, onRe
               {menu === 'view' && <>
                 {item('Flow canvas', () => onViewChange('flow'), activeView === 'flow')}
                 {item('XML preview', () => onViewChange('xml'), activeView === 'xml')}
+                {item('Validate flow', () => onViewChange('validate'), activeView === 'validate')}
                 <div className="gve-menu-separator" />
+                {item(focusMode ? 'Exit focus mode' : 'Focus mode', onToggleFocusMode, false, 'Ctrl+Shift+F')}
                 {item('Reset panel layout', onResetLayout)}
               </>}
               {menu === 'help' && <>

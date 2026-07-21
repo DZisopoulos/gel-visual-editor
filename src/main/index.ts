@@ -1,6 +1,6 @@
 import { app, shell, BrowserWindow, ipcMain, dialog } from 'electron'
 import { join } from 'path'
-import { readFile, writeFile } from 'node:fs/promises'
+import { readFile, rename, writeFile } from 'node:fs/promises'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 
@@ -43,7 +43,7 @@ function createWindow(): void {
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
   // Set app user model id for windows
-  electronApp.setAppUserModelId('com.electron')
+  electronApp.setAppUserModelId('com.gve.visual-editor')
 
   // Default open or close DevTools by F12 in development
   // and ignore CommandOrControl + R in production.
@@ -63,6 +63,7 @@ app.whenReady().then(() => {
     if (result.canceled || result.filePaths.length === 0) return null
 
     const filePath = result.filePaths[0]
+    app.addRecentDocument(filePath)
     return { filePath, content: await readFile(filePath, 'utf8') }
   })
 
@@ -79,7 +80,8 @@ app.whenReady().then(() => {
         filePath = result.filePath
       }
 
-      await writeFile(filePath, content, 'utf8')
+      await atomicWrite(filePath, content)
+      app.addRecentDocument(filePath)
       return filePath
     }
   )
@@ -91,7 +93,8 @@ app.whenReady().then(() => {
     })
     if (result.canceled || !result.filePath) return null
 
-    await writeFile(result.filePath, content, 'utf8')
+    await atomicWrite(result.filePath, content)
+    app.addRecentDocument(result.filePath)
     return result.filePath
   })
 
@@ -127,6 +130,12 @@ app.whenReady().then(() => {
 function withExtension(fileName: string, extension: '.gve' | '.xml'): string {
   const safeName = fileName.trim() || 'Untitled Flow'
   return safeName.toLowerCase().endsWith(extension) ? safeName : `${safeName}${extension}`
+}
+
+async function atomicWrite(filePath: string, content: string): Promise<void> {
+  const temporaryPath = `${filePath}.gve-writing-${process.pid}-${Date.now()}`
+  await writeFile(temporaryPath, content, 'utf8')
+  await rename(temporaryPath, filePath)
 }
 
 // Quit when all windows are closed, except on macOS. There, it's common

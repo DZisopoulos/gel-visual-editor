@@ -4,6 +4,7 @@ import { getNodeDef } from '../../../shared/registry'
 import type { DropTarget } from '../../../shared/tree'
 import { useGve } from '../store'
 import BlockCard from './BlockCard'
+import OutlinePanel from './OutlinePanel'
 
 function DropZone({ target }: { target: DropTarget }): React.JSX.Element {
   const [active, setActive] = useState(false)
@@ -74,6 +75,7 @@ function Canvas(): React.JSX.Element {
   const select = useGve((s) => s.select)
   const addBlock = useGve((s) => s.addBlock)
   const [zoom, setZoom] = useState(1)
+  const [outlineOpen, setOutlineOpen] = useState(false)
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent): void => {
@@ -89,10 +91,13 @@ function Canvas(): React.JSX.Element {
   return (
     <main className="gve-canvas" aria-label="Flow canvas" onClick={() => select(null)}>
       <div className="gve-canvas-toolbar" aria-label="Canvas zoom controls" onClick={(event) => event.stopPropagation()}>
+        <button type="button" aria-label="Toggle flow outline" title="Toggle flow outline" className={outlineOpen ? 'gve-canvas-tool-active' : ''} onClick={() => setOutlineOpen(value => !value)}>☷</button>
+        <span className="gve-canvas-toolbar-divider" />
         <button type="button" aria-label="Zoom out" title="Zoom out (Ctrl/Cmd -)" onClick={() => setZoom((value) => Math.max(0.7, Number((value - 0.1).toFixed(1))))}>−</button>
         <button type="button" className="gve-zoom-value" aria-label="Reset zoom" title="Reset zoom (Ctrl/Cmd 0)" onClick={() => setZoom(1)}>{Math.round(zoom * 100)}%</button>
         <button type="button" aria-label="Zoom in" title="Zoom in (Ctrl/Cmd +)" onClick={() => setZoom((value) => Math.min(1.4, Number((value + 0.1).toFixed(1))))}>+</button>
       </div>
+      {outlineOpen && <OutlinePanel onClose={() => setOutlineOpen(false)} />}
       <div className="gve-canvas-scroll">
         <div className="gve-flow-stack" style={{ zoom }}>
         <div className="gve-flow-cap gve-flow-start">

@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import type { Block } from '../../../shared/flow'
 import { getNodeDef } from '../../../shared/registry'
 import { useGve } from '../store'
+import { saveSnippet } from '../snippets'
 
 interface BlockCardProps {
   block: Block
@@ -14,6 +15,7 @@ function BlockCard({ block, children }: BlockCardProps): React.JSX.Element {
   const select = useGve((s) => s.select)
   const remove = useGve((s) => s.remove)
   const toggleEnabled = useGve((s) => s.toggleEnabled)
+  const duplicate = useGve((s) => s.duplicate)
   const summaryField = def.fields.find((field) => block.props[field.key])
   const summary = summaryField ? block.props[summaryField.key] : ''
 
@@ -55,6 +57,8 @@ function BlockCard({ block, children }: BlockCardProps): React.JSX.Element {
           ⠿
         </span>
         <div className="gve-block-actions">
+          <button type="button" aria-label={`Duplicate ${def.name}`} title="Duplicate block" onClick={(event) => { event.stopPropagation(); duplicate(block.id) }}>＋</button>
+          <button type="button" aria-label={`Save ${def.name} as snippet`} title="Save as snippet" onClick={(event) => { event.stopPropagation(); saveSnippet(block, window.prompt('Snippet name', block.props.stepName || def.name) || '') }}>⌑</button>
           <button
             type="button"
             aria-label={block.enabled ? `Disable ${def.name}` : `Enable ${def.name}`}

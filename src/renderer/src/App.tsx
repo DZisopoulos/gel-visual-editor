@@ -3,6 +3,7 @@ import Canvas from './components/Canvas'
 import CommandPalette from './components/CommandPalette'
 import AboutDialog from './components/AboutDialog'
 import MenuBar from './components/MenuBar'
+import ValidationView from './components/ValidationView'
 import Footer from './components/Footer'
 import Header from './components/Header'
 import Inspector from './components/Inspector'
@@ -17,8 +18,10 @@ import {
   type ThemePreferences
 } from './theme'
 import { useGve } from './store'
+import { parseFlowDocument } from '../../shared/schema'
 
 const LAYOUT_KEY = 'gve-layout-preferences'
+const AUTOSAVE_KEY = 'gve-autosave-draft'
 interface LayoutPreferences {
   paletteWidth: number
   inspectorWidth: number
@@ -42,12 +45,16 @@ function loadLayoutPreferences(): LayoutPreferences {
 }
 
 function App(): React.JSX.Element {
-  const [activeView, setActiveView] = useState<'flow' | 'xml'>('flow')
+  const [activeView, setActiveView] = useState<'flow' | 'xml' | 'validate'>('flow')
   const [themePreferences, setThemePreferences] = useState<ThemePreferences>(loadThemePreferences)
   const [layout, setLayout] = useState<LayoutPreferences>(loadLayoutPreferences)
   const [commandOpen, setCommandOpen] = useState(false)
   const [aboutOpen, setAboutOpen] = useState(false)
+  const [focusMode, setFocusMode] = useState(false)
   const selectedId = useGve(s => s.selectedId)
+  const flow = useGve(s => s.flow)
+  const dirty = useGve(s => s.dirty)
+  const loadFlow = useGve(s => s.loadFlow)
   const undo = useGve(s => s.undo)
   const redo = useGve(s => s.redo)
   const remove = useGve(s => s.remove)
@@ -63,6 +70,22 @@ function App(): React.JSX.Element {
   useEffect(() => {
     localStorage.setItem(LAYOUT_KEY, JSON.stringify(layout))
   }, [layout])
+  useEffect(() => {
+    const saved = localStorage.getItem(AUTOSAVE_KEY)
+    if (!saved) return
+    try {
+      const recovered = parseFlowDocument(JSON.parse(saved))
+      if (window.confirm(`Recover the unsaved draft “${recovered.meta.name}”?`)) loadFlow(recovered, null)
+      else localStorage.removeItem(AUTOSAVE_KEY)
+    } catch { localStorage.removeItem(AUTOSAVE_KEY) }
+  // Recovery is intentionally offered once when the shell mounts.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+  useEffect(() => {
+    if (!dirty) { localStorage.removeItem(AUTOSAVE_KEY); return }
+    const timer = window.setTimeout(() => localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(flow)), 800)
+    return () => window.clearTimeout(timer)
+  }, [dirty, flow])
   useEffect(() => {
     const onMove = (event: PointerEvent): void => {
       const resize = resizeRef.current
@@ -93,6 +116,7 @@ function App(): React.JSX.Element {
       const modifier = event.ctrlKey || event.metaKey
       if (modifier && event.key.toLowerCase() === 'k') { event.preventDefault(); setCommandOpen(true); return }
       if (isTyping || commandOpen) return
+      if (modifier && event.shiftKey && event.key.toLowerCase() === 'f') { event.preventDefault(); setFocusMode(value => !value); return }
       if (modifier && event.key.toLowerCase() === 'z') { event.preventDefault(); event.shiftKey ? redo() : undo(); return }
       if (modifier && event.key.toLowerCase() === 'y') { event.preventDefault(); redo(); return }
       if ((event.key === 'Delete' || event.key === 'Backspace') && selectedId) { event.preventDefault(); remove(selectedId) }
@@ -118,7 +142,7 @@ function App(): React.JSX.Element {
 
   return (
     <div
-      className="gve-shell"
+      className={`gve-shell${focusMode ? ' gve-shell-focus' : ''}`}
       data-app-theme={themePreferences.app}
       style={getTheme(themePreferences.app).appVars as React.CSSProperties}
     >
@@ -129,19 +153,19 @@ function App(): React.JSX.Element {
         onOpenCommandPalette={() => setCommandOpen(true)}
         onAbout={() => setAboutOpen(true)}
         onResetLayout={() => setLayout(DEFAULT_LAYOUT)}
+        focusMode={focusMode}
+        onToggleFocusMode={() => setFocusMode(value => !value)}
       />
       <div
         className="gve-app"
         data-app-theme={themePreferences.app}
-        style={{
-          gridTemplateColumns: `${layout.paletteWidth}px minmax(0, 1fr) ${layout.inspectorWidth}px`
-        }}
+        style={{ gridTemplateColumns: focusMode ? '0 minmax(0, 1fr) 0' : `${layout.paletteWidth}px minmax(0, 1fr) ${layout.inspectorWidth}px` }}
       >
         <Header />
         <Palette onResizeStart={(event) => startResize('palette', event)} />
         <div className="gve-center">
           <div className="gve-center-content">
-            {activeView === 'flow' ? <Canvas /> : <XmlPreview theme={themePreferences.xml} />}
+            {activeView === 'flow' ? <Canvas /> : activeView === 'xml' ? <XmlPreview theme={themePreferences.xml} /> : <ValidationView onOpenFlow={() => setActiveView('flow')} />}
           </div>
           <div className="gve-view-tabs" role="tablist" aria-label="Workspace view">
             <button
@@ -161,6 +185,15 @@ function App(): React.JSX.Element {
               onClick={() => setActiveView('xml')}
             >
               XML Preview
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={activeView === 'validate'}
+              className={`gve-view-tab${activeView === 'validate' ? ' gve-view-tab-active' : ''}`}
+              onClick={() => setActiveView('validate')}
+            >
+              Validate
             </button>
           </div>
         </div>

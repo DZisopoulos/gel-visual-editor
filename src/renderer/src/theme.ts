@@ -1,6 +1,6 @@
 import type { editor } from 'monaco-editor'
 
-export type ThemeId = 'gve-dark' | 'dracula' | 'github-light' | 'github-dark' | 'material' | 'nord'
+export type ThemeId = 'gve-aurora' | 'gve-dark' | 'dracula' | 'github-light' | 'github-dark' | 'material' | 'nord'
 
 export interface ThemeDefinition {
   id: ThemeId
@@ -48,6 +48,13 @@ function monacoTheme(
 }
 
 const themes: ThemeDefinition[] = [
+  {
+    id: 'gve-aurora', name: 'GVE Aurora',
+    appVars: { '--bg': '#0B1020', '--panel': '#121A2E', '--panel-2': '#17233B', '--border': '#2D4164', '--accent': '#6EE7F5', '--warn': '#FBBF77', '--error': '#FB7185', '--ok': '#86EFAC', '--text': '#EDF7FF', '--text-muted': '#91A8C4' },
+    xmlVars: { '--xml-bg': '#0A1020', '--xml-panel': '#121A2E', '--xml-panel-2': '#17233B', '--xml-border': '#2D4164', '--xml-accent': '#6EE7F5', '--xml-text': '#EDF7FF', '--xml-muted': '#91A8C4' },
+    monacoName: 'gve-aurora-xml',
+    monaco: monacoTheme('vs-dark', { background: '#0A1020', foreground: '#EDF7FF', border: '#2D4164', accent: '#6EE7F5', muted: '#91A8C4', tag: '#6EE7F5', attribute: '#C4B5FD', stringColor: '#FBBF77', comment: '#64748B' })
+  },
   {
     id: 'gve-dark', name: 'GVE Dark',
     appVars: { '--bg': '#0F1218', '--panel': '#171C26', '--panel-2': '#131822', '--border': '#2A3140', '--accent': '#2DD4BF', '--warn': '#F5B84D', '--error': '#F26D6D', '--ok': '#4ADE80', '--text': '#E1E2EB', '--text-muted': '#8A93A6' },
@@ -106,7 +113,7 @@ function isThemeId(value: unknown): value is ThemeId {
 }
 
 export function loadThemePreferences(): ThemePreferences {
-  const fallback: ThemePreferences = { app: 'gve-dark', xml: 'gve-dark' }
+  const fallback: ThemePreferences = { app: 'gve-aurora', xml: 'gve-aurora' }
   if (typeof window === 'undefined') return fallback
   try {
     const parsed = JSON.parse(window.localStorage.getItem(THEME_STORAGE_KEY) ?? '{}') as Record<string, unknown>

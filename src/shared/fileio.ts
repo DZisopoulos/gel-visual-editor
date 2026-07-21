@@ -1,5 +1,6 @@
 import type { Flow } from './flow'
 import { GveImportError, importXml, type ImportResult } from './roundtrip'
+import { parseFlowDocument } from './schema'
 
 export function serializeFlow(flow: Flow): string {
   return `${JSON.stringify(flow, null, 2)}\n`
@@ -15,14 +16,6 @@ export function parseFlowFile(content: string, fileName: string): ImportResult {
     throw new GveImportError('bad-payload', 'Flow file is not valid JSON.')
   }
 
-  if (
-    !parsed ||
-    typeof parsed !== 'object' ||
-    (parsed as Partial<Flow>).gveVersion !== '1.0' ||
-    !Array.isArray((parsed as Partial<Flow>).blocks)
-  ) {
-    throw new GveImportError('bad-payload', 'Flow file has an unexpected shape.')
-  }
-
-  return { flow: parsed as Flow, drift: false }
+  try { return { flow: parseFlowDocument(parsed), drift: false } }
+  catch (error) { throw new GveImportError('bad-payload', error instanceof Error ? error.message : 'Flow file has an unexpected shape.') }
 }

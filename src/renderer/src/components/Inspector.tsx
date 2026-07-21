@@ -3,6 +3,7 @@ import { getNodeDef } from '../../../shared/registry'
 import type { FieldDef } from '../../../shared/registry/types'
 import { findBlock } from '../../../shared/tree'
 import { useGve } from '../store'
+import { variablesInScope } from '../../../shared/validate'
 
 function fieldClass(field: FieldDef, value: string): string {
   const classes = ['gve-field-control']
@@ -128,6 +129,7 @@ function Inspector({
   }
 
   const def = getNodeDef(selected.type)
+  const variables = variablesInScope(flow, selected.id)
   return (
     <aside className="gve-inspector" aria-label="Inspector">
       <div
@@ -146,6 +148,7 @@ function Inspector({
             onChange={(event) => updateProps(selected.id, { stepName: event.target.value })}
           />
         </label>
+        <div className="gve-scope-panel"><div className="gve-scope-title">Variables in scope</div>{variables.length === 0 ? <span className="gve-scope-empty">No variables introduced yet</span> : <div className="gve-scope-chips">{variables.map(variable => <span className="gve-scope-chip mono" key={variable}>{variable}</span>)}</div>}</div>
         {def.fields.map((field) => {
           const value = selected.props[field.key] ?? ''
           const className = fieldClass(field, value)

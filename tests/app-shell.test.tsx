@@ -30,6 +30,9 @@ describe('app shell', () => {
     expect(screen.getByRole('tab', { name: 'XML Preview' }).getAttribute('aria-selected')).toBe(
       'true'
     )
+    fireEvent.click(screen.getByRole('tab', { name: 'Validate' }))
+    expect(screen.getByRole('tab', { name: 'Validate' }).getAttribute('aria-selected')).toBe('true')
+    expect(screen.getByRole('region', { name: 'Validation view' })).toBeTruthy()
   })
 
   it('opens the About dialog from the application menu', () => {
@@ -48,5 +51,14 @@ describe('app shell', () => {
     expect(screen.getByRole('dialog', { name: 'Command palette' })).toBeTruthy()
     fireEvent.keyDown(screen.getByRole('textbox', { name: 'Search commands' }), { key: 'Escape' })
     expect(document.querySelector('.gve-command-palette')).toBeNull()
+  })
+
+  it('opens the outline and focus mode affordances', () => {
+    render(<App />)
+    fireEvent.click(screen.getByRole('button', { name: 'Toggle flow outline' }))
+    expect(screen.getByRole('complementary', { name: 'Flow outline' })).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: 'View' }))
+    fireEvent.click(screen.getByRole('button', { name: /Focus mode/ }))
+    expect(document.querySelector('.gve-shell-focus')).toBeTruthy()
   })
 })

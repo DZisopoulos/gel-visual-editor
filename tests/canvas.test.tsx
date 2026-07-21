@@ -37,6 +37,12 @@ describe('canvas', () => {
     expect(screen.getByRole('button', { name: 'Zoom out' })).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Zoom in' })).toBeTruthy()
   })
+  it('duplicates a block from its card action', () => {
+    useGve.getState().addBlock('log-message', { parentId: null, index: 0 })
+    render(<Canvas />)
+    fireEvent.click(screen.getByRole('button', { name: 'Duplicate Log Message' }))
+    expect(useGve.getState().flow.blocks).toHaveLength(2)
+  })
   it('clears selection when the canvas background is clicked', () => {
     useGve.getState().addBlock('log-message', { parentId: null, index: 0 })
     useGve.getState().select(useGve.getState().flow.blocks[0].id)
