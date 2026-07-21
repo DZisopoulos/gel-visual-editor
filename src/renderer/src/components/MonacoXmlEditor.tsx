@@ -31,7 +31,8 @@ function MonacoXmlEditor({ xml, theme }: { xml: string; theme: ThemeId }): React
       beforeMount={monacoInstance => {
         configureXmlLanguage()
         for (const themeOption of THEME_OPTIONS) {
-          monacoInstance.editor.defineTheme(themeOption.monacoName, themeOption.monaco)
+          const definition = getTheme(themeOption.id)
+          monacoInstance.editor.defineTheme(definition.monacoName, definition.monaco)
         }
       }}
       options={{

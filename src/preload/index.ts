@@ -11,6 +11,14 @@ const gve = {
   setDirty: (dirty: boolean): void => {
     ipcRenderer.send('gve:window:set-dirty', dirty)
   },
+  onCloseRequest: (listener: () => void): (() => void) => {
+    const handler = (): void => listener()
+    ipcRenderer.on('gve:window:request-close', handler)
+    return () => ipcRenderer.removeListener('gve:window:request-close', handler)
+  },
+  respondToClose: (discard: boolean): void => {
+    ipcRenderer.send('gve:window:close-response', discard)
+  },
   window: {
     minimize: (): Promise<void> => ipcRenderer.invoke('gve:window:minimize'),
     toggleMaximize: (): Promise<boolean> => ipcRenderer.invoke('gve:window:toggle-maximize'),

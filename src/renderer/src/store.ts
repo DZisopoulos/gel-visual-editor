@@ -10,7 +10,7 @@ const COALESCE_WINDOW_MS = 700
 interface EditRun { key: string; at: number }
 
 export interface GveState {
-  flow: Flow; selectedId: string | null; dirty: boolean; filePath: string | null
+  flow: Flow; selectedId: string | null; dirty: boolean; isLoading: boolean; filePath: string | null
   past: Flow[]; future: Flow[]; lastEdit: EditRun | null
   select(id: string | null): void
   loadFlow(flow: Flow, filePath: string | null): void
@@ -68,9 +68,12 @@ function duplicateInList(blocks: import('../../shared/flow').Block[], id: string
 function rekey(block: Block): Block { return { ...structuredClone(block), id: newId(), ...(block.children ? { children: block.children.map(rekey) } : {}) } }
 
 export const useGve = create<GveState>((set) => ({
-  flow: createEmptyFlow(), selectedId: null, dirty: false, filePath: null, past: [], future: [], lastEdit: null,
+  flow: createEmptyFlow(), selectedId: null, dirty: false, isLoading: false, filePath: null, past: [], future: [], lastEdit: null,
   select: id => set({ selectedId: id }),
-  loadFlow: (flow, filePath) => set({ flow, filePath, selectedId: null, dirty: false, past: [], future: [], lastEdit: null }),
+  loadFlow: (flow, filePath) => {
+    set({ flow, filePath, selectedId: null, dirty: false, isLoading: true, past: [], future: [], lastEdit: null })
+    setTimeout(() => set({ isLoading: false }), 180)
+  },
   addBlock: (type, target) => set(s => {
     const blk = createBlock(type)
     return { ...snap(s), flow: { ...s.flow, blocks: insertBlock(s.flow.blocks, blk, target) }, selectedId: blk.id }

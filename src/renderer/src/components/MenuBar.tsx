@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { createEmptyFlow } from '../../../shared/flow'
 import { useGve } from '../store'
 import Header from './Header'
+import { useDialog } from './DialogProvider'
 
 type MenuId = 'file' | 'edit' | 'view' | 'help'
 interface MenuBarProps {
@@ -23,6 +24,7 @@ function MenuBar({ activeView, onViewChange, onOpenCommandPalette, onAbout, onRe
   const redo = useGve(s => s.redo)
   const canUndo = useGve(s => s.past.length > 0)
   const canRedo = useGve(s => s.future.length > 0)
+  const { confirm } = useDialog()
 
   useEffect(() => {
     const onPointerDown = (event: PointerEvent): void => {
@@ -33,13 +35,13 @@ function MenuBar({ activeView, onViewChange, onOpenCommandPalette, onAbout, onRe
   }, [])
 
   const close = (): void => setOpenMenu(null)
-  const newFlow = (): void => {
-    if (dirty && !window.confirm('Discard your unsaved changes and start a new flow?')) return
+  const newFlow = async (): Promise<void> => {
+    if (dirty && !await confirm('Start a new flow?', 'Discard your unsaved changes and start a new flow?', { confirmLabel: 'Discard changes' })) return
     loadFlow(createEmptyFlow(), null)
     close()
   }
 
-  const item = (label: string, action: () => void, disabled = false, hint?: string): React.JSX.Element => (
+  const item = (label: string, action: () => void | Promise<void>, disabled = false, hint?: string): React.JSX.Element => (
     <button type="button" className="gve-menu-item" disabled={disabled} onClick={() => { action(); if (!disabled) close() }}>
       <span>{label}</span>{hint && <kbd>{hint}</kbd>}
     </button>

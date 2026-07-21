@@ -3,6 +3,9 @@ import type { Block } from '../../../shared/flow'
 import { getNodeDef } from '../../../shared/registry'
 import { useGve } from '../store'
 import { saveSnippet } from '../snippets'
+import { useDialog } from './DialogProvider'
+import { BlockIcon } from './BlockIcon'
+import { setBlockDragPreview } from '../dragPreview'
 
 interface BlockCardProps {
   block: Block
@@ -18,6 +21,11 @@ function BlockCard({ block, children }: BlockCardProps): React.JSX.Element {
   const duplicate = useGve((s) => s.duplicate)
   const summaryField = def.fields.find((field) => block.props[field.key])
   const summary = summaryField ? block.props[summaryField.key] : ''
+  const { prompt } = useDialog()
+  const saveAsSnippet = async (): Promise<void> => {
+    const name = await prompt('Save snippet', 'Choose a name for this reusable block.', block.props.stepName || def.name)
+    if (name) saveSnippet(block, name)
+  }
 
   return (
     <article
@@ -40,12 +48,13 @@ function BlockCard({ block, children }: BlockCardProps): React.JSX.Element {
         event.stopPropagation()
         event.dataTransfer.setData('application/x-gve-move-block', block.id)
         event.dataTransfer.effectAllowed = 'move'
+        setBlockDragPreview(event, def.name, def.color)
       }}
       style={{ '--block-color': def.color } as React.CSSProperties}
     >
       <div className="gve-block-head">
         <span className="gve-block-icon" aria-hidden="true">
-          {def.name.slice(0, 1)}
+          <BlockIcon type={block.type} definition={def} />
         </span>
         <div className="gve-block-title">
           <span className="gve-block-type">{def.name}</span>
@@ -58,7 +67,7 @@ function BlockCard({ block, children }: BlockCardProps): React.JSX.Element {
         </span>
         <div className="gve-block-actions">
           <button type="button" aria-label={`Duplicate ${def.name}`} title="Duplicate block" onClick={(event) => { event.stopPropagation(); duplicate(block.id) }}>＋</button>
-          <button type="button" aria-label={`Save ${def.name} as snippet`} title="Save as snippet" onClick={(event) => { event.stopPropagation(); saveSnippet(block, window.prompt('Snippet name', block.props.stepName || def.name) || '') }}>⌑</button>
+          <button type="button" aria-label={`Save ${def.name} as snippet`} title="Save as snippet" onClick={(event) => { event.stopPropagation(); void saveAsSnippet() }}>⌑</button>
           <button
             type="button"
             aria-label={block.enabled ? `Disable ${def.name}` : `Enable ${def.name}`}

@@ -5,6 +5,8 @@ export interface GveBridge {
   saveFlow(suggestedName: string, content: string, existingPath: string | null): Promise<string | null>
   exportXml(suggestedName: string, content: string): Promise<string | null>
   setDirty(dirty: boolean): void
+  onCloseRequest(listener: () => void): () => void
+  respondToClose(discard: boolean): void
   window: {
     minimize(): Promise<void>
     toggleMaximize(): Promise<boolean>

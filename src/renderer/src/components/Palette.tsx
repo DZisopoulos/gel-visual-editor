@@ -5,6 +5,8 @@ import { useGve } from '../store'
 import TemplatePicker from './TemplatePicker'
 import SnippetDialog from './SnippetDialog'
 import type { SavedSnippet } from '../snippets'
+import { BlockIcon } from './BlockIcon'
+import { setBlockDragPreview } from '../dragPreview'
 
 const categories: NodeDefinition['category'][] = [
   'core',
@@ -15,9 +17,15 @@ const categories: NodeDefinition['category'][] = [
 ]
 
 function Palette({
-  onResizeStart
+  onResizeStart,
+  compact = false,
+  collapsed = false,
+  onToggleCollapsed
 }: {
   onResizeStart?: (event: React.PointerEvent) => void
+  compact?: boolean
+  collapsed?: boolean
+  onToggleCollapsed?: () => void
 }): React.JSX.Element {
   const flow = useGve((s) => s.flow)
   const addBlock = useGve((s) => s.addBlock)
@@ -27,17 +35,18 @@ function Palette({
   const [query, setQuery] = useState('')
   const [templatesOpen, setTemplatesOpen] = useState(false)
   const [snippetsOpen, setSnippetsOpen] = useState(false)
-  const [collapsed, setCollapsed] = useState<Partial<Record<NodeDefinition['category'], boolean>>>(
+  const [categoryCollapsed, setCategoryCollapsed] = useState<Partial<Record<NodeDefinition['category'], boolean>>>(
     {}
   )
   const normalizedQuery = query.trim().toLowerCase()
 
   const setAllCollapsed = (value: boolean): void => {
-    setCollapsed(Object.fromEntries(categories.map((category) => [category, value])))
+    setCategoryCollapsed(Object.fromEntries(categories.map((category) => [category, value])))
   }
 
   return (
-    <aside className="gve-palette" aria-label="Block palette">
+    <aside className={`gve-palette${collapsed ? ' gve-panel-rail' : ''}`} aria-label="Block palette">
+      {compact && <button type="button" className="gve-panel-rail-toggle" aria-label={collapsed ? 'Expand block palette' : 'Collapse block palette'} title={collapsed ? 'Expand block palette' : 'Collapse block palette'} onClick={onToggleCollapsed}>{collapsed ? '›' : '‹'}</button>}
       <div
         className="gve-panel-resize gve-panel-resize-right"
         role="separator"
@@ -75,7 +84,7 @@ function Palette({
             return `${def.name} ${def.type}`.toLowerCase().includes(normalizedQuery)
           })
           if (entries.length === 0) return null
-          const isCollapsed = Boolean(collapsed[category]) && !normalizedQuery
+          const isCollapsed = Boolean(categoryCollapsed[category]) && !normalizedQuery
           return (
             <section className="gve-palette-group" key={category}>
               <button
@@ -83,7 +92,7 @@ function Palette({
                 className="gve-palette-label"
                 aria-expanded={!isCollapsed}
                 onClick={() =>
-                  setCollapsed((value) => ({ ...value, [category]: !value[category] }))
+                    setCategoryCollapsed((value) => ({ ...value, [category]: !value[category] }))
                 }
               >
                 <span>{category}</span>
@@ -103,6 +112,7 @@ function Palette({
                     onDragStart={(event) => {
                       event.dataTransfer.setData('application/x-gve-new-block', def.type)
                       event.dataTransfer.effectAllowed = 'copy'
+                      setBlockDragPreview(event, def.name, def.color)
                     }}
                     onDoubleClick={() =>
                       addBlock(def.type, { parentId: null, index: flow.blocks.length })
@@ -115,6 +125,7 @@ function Palette({
                     }}
                   >
                     <span className="gve-palette-dot" style={{ backgroundColor: def.color }} />
+                    <BlockIcon type={def.type} definition={def} className="gve-palette-icon" />
                     <span>{def.name}</span>
                   </div>
                 ))}

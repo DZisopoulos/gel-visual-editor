@@ -37,7 +37,9 @@ function DropZone({ target }: { target: DropTarget }): React.JSX.Element {
         const blockId = event.dataTransfer.getData('application/x-gve-move-block')
         if (blockId) move(blockId, target)
       }}
-    />
+    >
+      <svg className="gve-connector-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v17M7 14l5 5 5-5" /></svg>
+    </div>
   )
 }
 
@@ -74,6 +76,7 @@ function Canvas(): React.JSX.Element {
   const flow = useGve((s) => s.flow)
   const select = useGve((s) => s.select)
   const addBlock = useGve((s) => s.addBlock)
+  const isLoading = useGve((s) => s.isLoading)
   const [zoom, setZoom] = useState(1)
   const [outlineOpen, setOutlineOpen] = useState(false)
 
@@ -100,6 +103,7 @@ function Canvas(): React.JSX.Element {
       {outlineOpen && <OutlinePanel onClose={() => setOutlineOpen(false)} />}
       <div className="gve-canvas-scroll">
         <div className="gve-flow-stack" style={{ zoom }}>
+        {isLoading && <div className="gve-flow-loading-skeleton" aria-label="Loading flow" aria-busy="true"><span /><span /><span /></div>}
         <div className="gve-flow-cap gve-flow-start">
           <span>START</span>
           <div className="gve-parameter-chips">

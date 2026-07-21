@@ -2,6 +2,8 @@ import { useGve } from '../store'
 import { parseFlowFile, serializeFlow } from '../../../shared/fileio'
 import { exportXml } from '../../../shared/roundtrip'
 import { validateFlow } from '../../../shared/validate'
+import { useDialog } from './DialogProvider'
+import { useToast } from './Toast'
 
 type IconName = 'undo' | 'redo' | 'open' | 'save' | 'export'
 
@@ -28,6 +30,8 @@ function Header(): React.JSX.Element {
   const markSaved = useGve(s => s.markSaved)
   const undo = useGve(s => s.undo)
   const redo = useGve(s => s.redo)
+  const { confirm, alert } = useDialog()
+  const { push } = useToast()
 
   const countBlocks = (blocks: typeof flow.blocks): number => blocks.reduce((count, block) => count + 1 + (block.children ? countBlocks(block.children) : 0), 0)
   const validation = validateFlow(flow)
@@ -40,14 +44,14 @@ function Header(): React.JSX.Element {
     try {
       const existingGvePath = filePath?.toLowerCase().endsWith('.gve') ? filePath : null
       const savedPath = await window.gve.saveFlow(suggestedName(), serializeFlow(flow), existingGvePath)
-      if (savedPath) markSaved(savedPath)
+      if (savedPath) { markSaved(savedPath); push('Flow saved successfully.', 'success') }
     } catch (error) {
-      window.alert(`Could not save this flow. ${error instanceof Error ? error.message : String(error)}`)
+      await alert('Save failed', `Could not save this flow. ${error instanceof Error ? error.message : String(error)}`)
     }
   }
 
   const handleOpen = async (): Promise<void> => {
-    if (dirty && !window.confirm('Discard your unsaved changes and open another flow?')) return
+    if (dirty && !await confirm('Open another flow?', 'Discard your unsaved changes and open another flow?', { confirmLabel: 'Discard changes' })) return
 
     try {
       const opened = await window.gve.openFlow()
@@ -56,11 +60,12 @@ function Header(): React.JSX.Element {
       const result = parseFlowFile(opened.content, opened.filePath)
       const editablePath = opened.filePath.toLowerCase().endsWith('.gve') ? opened.filePath : null
       loadFlow(result.flow, editablePath)
+      push('Flow opened successfully.', 'success')
       if (result.drift) {
-        window.alert('This XML was changed after export. GVE restored the embedded flow definition.')
+        await alert('XML changed', 'This XML was changed after export. GVE restored the embedded flow definition.')
       }
     } catch (error) {
-      window.alert(`Could not open this flow. ${error instanceof Error ? error.message : String(error)}`)
+      await alert('Open failed', `Could not open this flow. ${error instanceof Error ? error.message : String(error)}`)
     }
   }
 
@@ -68,12 +73,13 @@ function Header(): React.JSX.Element {
     const issues = validateFlow(flow)
     const errors = issues.filter(issue => issue.severity === 'error')
     const warnings = issues.filter(issue => issue.severity === 'warning')
-    if (errors.length > 0) { window.alert(`Export blocked: ${errors.length} validation error${errors.length === 1 ? '' : 's'} must be fixed first.`); return }
-    if (warnings.length > 0 && !window.confirm(`This flow has ${warnings.length} warning${warnings.length === 1 ? '' : 's'}. Export anyway?`)) return
+    if (errors.length > 0) { await alert('Export blocked', `${errors.length} validation error${errors.length === 1 ? '' : 's'} must be fixed first.`); return }
+    if (warnings.length > 0 && !await confirm('Export with warnings?', `This flow has ${warnings.length} warning${warnings.length === 1 ? '' : 's'}. Export anyway?`, { confirmLabel: 'Export anyway' })) return
     try {
-      await window.gve.exportXml(suggestedName(), exportXml(flow))
+      const exportedPath = await window.gve.exportXml(suggestedName(), exportXml(flow))
+      if (exportedPath) push('GEL exported successfully.', 'success')
     } catch (error) {
-      window.alert(`Could not export this flow. ${error instanceof Error ? error.message : String(error)}`)
+      await alert('Export failed', `Could not export this flow. ${error instanceof Error ? error.message : String(error)}`)
     }
   }
 

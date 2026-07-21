@@ -1,6 +1,6 @@
 import type { editor } from 'monaco-editor'
 
-export type ThemeId = 'gve-aurora' | 'gve-dark' | 'dracula' | 'github-light' | 'github-dark' | 'material' | 'nord'
+export type ThemeId = 'auto' | 'gve-aurora' | 'gve-dark' | 'dracula' | 'github-light' | 'github-dark' | 'material' | 'nord'
 
 export interface ThemeDefinition {
   id: ThemeId
@@ -11,7 +11,7 @@ export interface ThemeDefinition {
   monaco: editor.IStandaloneThemeData
 }
 
-const darkRules = (foreground: string, tag: string, attribute: string, stringColor: string, comment: string) => [
+const darkRules = (foreground: string, tag: string, attribute: string, stringColor: string, comment: string): editor.ITokenThemeRule[] => [
   { token: 'tag', foreground: tag },
   { token: 'delimiter', foreground: tag },
   { token: 'attribute.name', foreground: attribute },
@@ -99,13 +99,17 @@ const themes: ThemeDefinition[] = [
   }
 ]
 
-export const THEME_OPTIONS = themes
+export const THEME_OPTIONS: Array<{ id: ThemeId; name: string }> = [{ id: 'auto', name: 'Auto (System)' }, ...themes]
 export const THEME_STORAGE_KEY = 'gve-theme-preferences'
 
 export interface ThemePreferences { app: ThemeId; xml: ThemeId }
 
+export function getSystemThemeId(): Exclude<ThemeId, 'auto'> {
+  return typeof window !== 'undefined' && window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'gve-dark' : 'github-light'
+}
+
 export function getTheme(id: ThemeId): ThemeDefinition {
-  return themes.find(theme => theme.id === id) ?? themes[0]
+  return themes.find(theme => theme.id === (id === 'auto' ? getSystemThemeId() : id)) ?? themes[0]
 }
 
 function isThemeId(value: unknown): value is ThemeId {
