@@ -3,6 +3,8 @@ dist
 out
 .agents/
 graphify-out/
+.vscode/
+docs/
 .DS_Store
 .eslintcache
 *.log*

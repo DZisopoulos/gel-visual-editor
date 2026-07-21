@@ -38,22 +38,15 @@ Compose nested logic with blocks, inspect the generated XML, validate before exp
 
 The main workspace combines the block palette, flow canvas, and inspector. The canvas is intentionally calm and dense: nested logic stays readable while the inspector keeps the selected block's details close at hand.
 
-![GVE flow editor](docs/screenshots/editor.png)
+![GVE flow editor](assets/screenshots/flow.png)
 
 ### XML preview and validation
 
 The workspace tabs switch the center panel between **Flow**, **XML Preview**, and **Validate**. XML Preview is read-only and powered by Monaco with XML folding, syntax highlighting, completion hints, smooth scrolling, and a copy action.
 
-The repository also includes visual direction captures for the XML, validation, welcome, and export experiences in [`docs/design/stitch/`](docs/design/stitch/). Those images are design references; the runtime UI and feature behavior are defined by the source under `src/`.
+![GVE XML preview](assets/screenshots/xml-preview.png)
 
-<details>
-<summary>Open the design reference captures</summary>
-
-| XML preview                                                                             | Validation                                                                      | Export dialog                                                               |
-| --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
-| ![XML preview design reference](docs/design/stitch/gve_main_editor_xml_view/screen.png) | ![Validation design reference](docs/design/stitch/gve_validate_view/screen.png) | ![Export design reference](docs/design/stitch/gve_export_dialog/screen.png) |
-
-</details>
+![GVE validation view](assets/screenshots/validate.png)
 
 ## Why GVE?
 
@@ -230,7 +223,7 @@ src/
    ├─ schema.ts                   Runtime document validation
    └─ validate.ts                 Flow quality checks and scope analysis
 tests/                            Renderer, store, schema, XML, registry, and validation tests
-docs/                             Design references and implementation plans
+assets/screenshots/               Current runtime screenshots used by this README
 resources/                        Application icon and packaging assets
 ```
 
