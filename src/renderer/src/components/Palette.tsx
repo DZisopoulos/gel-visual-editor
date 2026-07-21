@@ -53,7 +53,7 @@ function Palette(): React.JSX.Element {
                 onClick={() => setCollapsed(value => ({ ...value, [category]: !value[category] }))}
               >
                 <span>{category}</span>
-                <span className="gve-palette-chevron" aria-hidden="true">{isCollapsed ? '▸' : '▾'}</span>
+                <span className={`gve-palette-chevron${isCollapsed ? ' gve-palette-chevron-collapsed' : ''}`} aria-hidden="true" />
               </button>
               {!isCollapsed && entries.map(def => (
                 <div
