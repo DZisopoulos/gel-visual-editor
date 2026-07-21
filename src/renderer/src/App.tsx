@@ -1,20 +1,33 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Canvas from './components/Canvas'
 import Header from './components/Header'
 import Inspector from './components/Inspector'
 import Palette from './components/Palette'
 import XmlPreview from './components/XmlPreview'
+import { getTheme, loadThemePreferences, saveThemePreferences, type ThemeId, type ThemePreferences } from './theme'
 
 function App(): React.JSX.Element {
   const [activeView, setActiveView] = useState<'flow' | 'xml'>('flow')
+  const [themePreferences, setThemePreferences] = useState<ThemePreferences>(loadThemePreferences)
+
+  useEffect(() => { saveThemePreferences(themePreferences) }, [themePreferences])
+
+  const updateTheme = (kind: keyof ThemePreferences, value: ThemeId): void => {
+    setThemePreferences(preferences => ({ ...preferences, [kind]: value }))
+  }
 
   return (
-    <div className="gve-app">
-      <Header />
+    <div className="gve-app" data-app-theme={themePreferences.app} style={getTheme(themePreferences.app).appVars as React.CSSProperties}>
+      <Header
+        appTheme={themePreferences.app}
+        xmlTheme={themePreferences.xml}
+        onAppThemeChange={value => updateTheme('app', value)}
+        onXmlThemeChange={value => updateTheme('xml', value)}
+      />
       <Palette />
       <div className="gve-center">
         <div className="gve-center-content">
-          {activeView === 'flow' ? <Canvas /> : <XmlPreview />}
+          {activeView === 'flow' ? <Canvas /> : <XmlPreview theme={themePreferences.xml} />}
         </div>
         <div className="gve-view-tabs" role="tablist" aria-label="Workspace view">
           <button

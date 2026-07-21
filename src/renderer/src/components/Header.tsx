@@ -1,8 +1,16 @@
 import { useGve } from '../store'
 import { parseFlowFile, serializeFlow } from '../../../shared/fileio'
 import { exportXml } from '../../../shared/roundtrip'
+import { THEME_OPTIONS, type ThemeId } from '../theme'
 
-function Header(): React.JSX.Element {
+interface HeaderProps {
+  appTheme: ThemeId
+  xmlTheme: ThemeId
+  onAppThemeChange: (theme: ThemeId) => void
+  onXmlThemeChange: (theme: ThemeId) => void
+}
+
+function Header({ appTheme, xmlTheme, onAppThemeChange, onXmlThemeChange }: HeaderProps): React.JSX.Element {
   const name = useGve(s => s.flow.meta.name)
   const past = useGve(s => s.past)
   const future = useGve(s => s.future)
@@ -68,6 +76,19 @@ function Header(): React.JSX.Element {
       <div className="gve-header-actions">
         <button type="button" onClick={undo} disabled={past.length === 0}>Undo</button>
         <button type="button" onClick={redo} disabled={future.length === 0}>Redo</button>
+        <span className="gve-header-divider" />
+        <label className="gve-theme-picker">
+          <span>App</span>
+          <select aria-label="App theme" value={appTheme} onChange={event => onAppThemeChange(event.target.value as ThemeId)}>
+            {THEME_OPTIONS.map(theme => <option value={theme.id} key={theme.id}>{theme.name}</option>)}
+          </select>
+        </label>
+        <label className="gve-theme-picker">
+          <span>XML</span>
+          <select aria-label="XML theme" value={xmlTheme} onChange={event => onXmlThemeChange(event.target.value as ThemeId)}>
+            {THEME_OPTIONS.map(theme => <option value={theme.id} key={theme.id}>{theme.name}</option>)}
+          </select>
+        </label>
         <span className="gve-header-divider" />
         <button type="button" onClick={handleSave}>Save Flow</button>
         <button type="button" onClick={handleOpen}>Open</button>
