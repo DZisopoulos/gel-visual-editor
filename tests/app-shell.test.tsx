@@ -32,9 +32,10 @@ describe('app shell', () => {
     )
   })
 
-  it('opens the About dialog from the footer', () => {
+  it('opens the About dialog from the application menu', () => {
     render(<App />)
-    fireEvent.click(screen.getByRole('button', { name: 'About' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Help' }))
+    fireEvent.click(screen.getByRole('button', { name: 'About GVE' }))
     expect(screen.getByRole('dialog', { name: 'GEL Visual Editor' })).toBeTruthy()
     expect(screen.getByText('Created by Dimitrios Zisopoulos')).toBeTruthy()
     fireEvent.click(screen.getByRole('button', { name: 'Done' }))

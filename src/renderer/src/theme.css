@@ -1067,3 +1067,68 @@ button:disabled {
 .gve-command-item-active { border-color: color-mix(in srgb, var(--accent) 38%, var(--border)); background: color-mix(in srgb, var(--accent) 10%, var(--panel-2)); }
 .gve-command-empty { padding: 24px 12px; color: var(--text-muted); text-align: center; }
 .gve-command-footer { display: flex; gap: 16px; padding: 8px 13px; border-top: 1px solid var(--border); color: var(--text-muted); font-size: 10px; }
+
+.gve-menubar {
+  position: relative;
+  z-index: 8;
+  display: flex;
+  flex: 0 0 34px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, var(--panel) 92%, var(--bg));
+  box-shadow: 0 3px 16px rgba(0, 0, 0, 0.12);
+}
+
+.gve-menu-groups { display: flex; align-items: stretch; height: 100%; gap: 2px; }
+.gve-menu { position: relative; display: flex; align-items: center; }
+.gve-menu-trigger { height: 28px; padding: 4px 10px; border: 1px solid transparent; border-radius: 5px; background: transparent; color: var(--text-muted); font-size: 11px; }
+.gve-menu-trigger:hover,
+.gve-menu-trigger-open { border-color: var(--border); background: var(--panel-2); color: var(--text); }
+.gve-menu-popover { position: absolute; top: 31px; left: 0; display: flex; min-width: 210px; flex-direction: column; gap: 2px; padding: 6px; border: 1px solid var(--border); border-radius: 8px; background: var(--panel); box-shadow: 0 14px 36px rgba(0, 0, 0, 0.35); animation: gve-menu-in 140ms ease-out both; transform-origin: top left; }
+.gve-menu-item { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 18px; padding: 8px 9px; border: 1px solid transparent; border-radius: 5px; background: transparent; color: var(--text); text-align: left; font-size: 11px; }
+.gve-menu-item:hover:not(:disabled) { border-color: color-mix(in srgb, var(--accent) 35%, var(--border)); background: color-mix(in srgb, var(--accent) 9%, var(--panel-2)); }
+.gve-menu-item kbd { color: var(--text-muted); font-size: 9px; }
+.gve-menu-separator { height: 1px; margin: 4px 3px; background: var(--border); }
+.gve-menu-version { padding: 6px 9px 5px; color: var(--text-muted); font-size: 10px; }
+.gve-menubar-command { display: flex; align-items: center; gap: 12px; padding: 4px 8px; border: 1px solid var(--border); border-radius: 5px; background: var(--panel-2); color: var(--text-muted); font-size: 10px; }
+.gve-menubar-command:hover { border-color: var(--accent); color: var(--text); }
+.gve-menubar-command kbd { padding: 2px 4px; border: 1px solid var(--border); border-radius: 3px; color: var(--text-muted); font-size: 9px; }
+
+.gve-footer { position: relative; justify-content: flex-end; }
+.gve-footer-copyright { position: absolute; left: 50%; color: var(--text-muted); transform: translateX(-50%); white-space: nowrap; }
+
+/* Motion language: quick, soft transitions keep the editor feeling alive without slowing work. */
+@keyframes gve-shell-in { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes gve-menu-in { from { opacity: 0; transform: translateY(-5px) scale(.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes gve-panel-in { from { opacity: 0; transform: translateX(-7px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes gve-panel-in-right { from { opacity: 0; transform: translateX(7px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes gve-block-in { from { opacity: 0; transform: translateY(7px) scale(.99); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes gve-modal-in { from { opacity: 0; transform: translateY(10px) scale(.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes gve-pulse { 0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 0%, transparent); } 50% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 12%, transparent); } }
+
+.gve-shell { animation: gve-shell-in 420ms cubic-bezier(.22, .8, .24, 1) both; }
+.gve-palette { animation: gve-panel-in 420ms 70ms cubic-bezier(.22, .8, .24, 1) both; }
+.gve-inspector { animation: gve-panel-in-right 420ms 110ms cubic-bezier(.22, .8, .24, 1) both; }
+.gve-block { animation: gve-block-in 300ms cubic-bezier(.22, .8, .24, 1) both; transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease, background 160ms ease; }
+.gve-block:hover { transform: translateY(-2px); box-shadow: 0 11px 27px rgba(0, 0, 0, .2); }
+.gve-block-slot:nth-child(2) .gve-block { animation-delay: 35ms; }
+.gve-block-slot:nth-child(3) .gve-block { animation-delay: 70ms; }
+.gve-block-slot:nth-child(4) .gve-block { animation-delay: 105ms; }
+.gve-palette-row { transition: transform 140ms ease, border-color 140ms ease, background 140ms ease; }
+.gve-palette-row:hover { transform: translateX(3px); }
+.gve-icon-button, .gve-view-tab, .gve-canvas-toolbar button, .gve-footer-about { transition: transform 140ms ease, color 140ms ease, background 140ms ease, border-color 140ms ease; }
+.gve-icon-button:hover:not(:disabled) { transform: translateY(-2px); }
+.gve-view-tab-active { animation: gve-pulse 1.8s ease-in-out infinite; }
+.gve-modal-backdrop { animation: gve-modal-in 180ms ease-out both; }
+.gve-about-dialog, .gve-command-palette { animation: gve-modal-in 220ms cubic-bezier(.22, .8, .24, 1) both; }
+.gve-dropzone-active { animation: gve-pulse 1.1s ease-in-out infinite; }
+button, input, select, textarea { transition: border-color 160ms ease, background 160ms ease, color 160ms ease, box-shadow 160ms ease, transform 160ms ease; }
+.gve-titlebar, .gve-header, .gve-footer, .gve-panel-title, .gve-flow-cap, .gve-view-tabs { transition: background 220ms ease, border-color 220ms ease, color 220ms ease; }
+.gve-flow-start, .gve-flow-end { animation: gve-block-in 360ms 120ms cubic-bezier(.22, .8, .24, 1) both; }
+.gve-empty-state { animation: gve-modal-in 360ms 150ms cubic-bezier(.22, .8, .24, 1) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: 1ms !important; }
+}

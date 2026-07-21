@@ -5,21 +5,12 @@ interface FooterProps {
   xmlTheme: ThemeId
   onAppThemeChange: (theme: ThemeId) => void
   onXmlThemeChange: (theme: ThemeId) => void
-  onAbout: () => void
 }
 
-const APP_VERSION = '1.0.0'
-
-function Footer({ appTheme, xmlTheme, onAppThemeChange, onXmlThemeChange, onAbout }: FooterProps): React.JSX.Element {
+function Footer({ appTheme, xmlTheme, onAppThemeChange, onXmlThemeChange }: FooterProps): React.JSX.Element {
   return (
     <footer className="gve-footer">
-      <div className="gve-footer-meta">
-        <span>© 2026 GVE</span>
-        <span className="gve-footer-divider" />
-        <span>Version {APP_VERSION}</span>
-        <span className="gve-footer-divider" />
-        <button type="button" className="gve-footer-about" onClick={onAbout}>About</button>
-      </div>
+      <span className="gve-footer-copyright">© 2026 GVE</span>
       <div className="gve-footer-themes">
         <label className="gve-theme-picker">
           <span>App</span>

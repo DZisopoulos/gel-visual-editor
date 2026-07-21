@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import Canvas from './components/Canvas'
 import CommandPalette from './components/CommandPalette'
 import AboutDialog from './components/AboutDialog'
+import MenuBar from './components/MenuBar'
 import Footer from './components/Footer'
 import Header from './components/Header'
 import Inspector from './components/Inspector'
@@ -122,6 +123,13 @@ function App(): React.JSX.Element {
       style={getTheme(themePreferences.app).appVars as React.CSSProperties}
     >
       <WindowTitleBar />
+      <MenuBar
+        activeView={activeView}
+        onViewChange={setActiveView}
+        onOpenCommandPalette={() => setCommandOpen(true)}
+        onAbout={() => setAboutOpen(true)}
+        onResetLayout={() => setLayout(DEFAULT_LAYOUT)}
+      />
       <div
         className="gve-app"
         data-app-theme={themePreferences.app}
@@ -163,7 +171,6 @@ function App(): React.JSX.Element {
         xmlTheme={themePreferences.xml}
         onAppThemeChange={(value) => updateTheme('app', value)}
         onXmlThemeChange={(value) => updateTheme('xml', value)}
-        onAbout={() => setAboutOpen(true)}
       />
       <CommandPalette open={commandOpen} onClose={() => setCommandOpen(false)} />
       <AboutDialog open={aboutOpen} onClose={() => setAboutOpen(false)} />
