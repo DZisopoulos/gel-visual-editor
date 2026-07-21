@@ -9,6 +9,9 @@
   --ok: #4ade80;
   --text: #e1e2eb;
   --text-muted: #8a93a6;
+  --shadow-sm: 0 3px 16px rgba(0, 0, 0, 0.12);
+  --shadow-md: 0 8px 22px rgba(0, 0, 0, 0.18);
+  --shadow-lg: 0 24px 70px rgba(0, 0, 0, 0.42);
   --font-ui: Roboto, 'Segoe UI', sans-serif;
   --font-mono: 'JetBrains Mono', Consolas, monospace;
 }
@@ -84,7 +87,6 @@ button:disabled {
   grid-template-rows: 56px minmax(0, 1fr);
   height: auto;
   flex: 1;
-  min-width: 900px;
   min-height: 0;
   overflow: hidden;
 }
@@ -678,6 +680,10 @@ button:disabled {
   background: var(--accent);
 }
 
+.gve-connector-svg { position: absolute; z-index: 1; top: 0; left: 50%; width: 24px; height: 24px; overflow: visible; color: color-mix(in srgb, var(--border) 90%, var(--text-muted)); pointer-events: none; transform: translateX(-50%); }
+.gve-connector-svg path { fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.4; }
+.gve-dropzone-active .gve-connector-svg { color: var(--accent); filter: drop-shadow(0 0 5px color-mix(in srgb, var(--accent) 45%, transparent)); }
+
 .gve-block {
   position: relative;
   overflow: hidden;
@@ -685,7 +691,7 @@ button:disabled {
   border-left: 4px solid var(--block-color);
   border-radius: 8px;
   background: var(--panel);
-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.14);
+  box-shadow: var(--shadow-md);
   cursor: pointer;
 }
 
@@ -723,6 +729,10 @@ button:disabled {
   font-weight: 800;
   text-transform: uppercase;
 }
+.gve-block-svg-icon { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.65; }
+.gve-palette-icon { width: 14px; height: 14px; color: var(--text-muted); }
+.gve-drag-preview { display: flex; width: 176px; align-items: center; gap: 9px; padding: 9px 11px; border: 1px solid var(--border); border-left: 4px solid var(--block-color); border-radius: 8px; background: var(--panel); box-shadow: var(--shadow-md); color: var(--text); font: 600 12px var(--font-ui); pointer-events: none; }
+.gve-drag-preview-icon { color: var(--block-color); font-size: 11px; }
 
 .gve-block-title {
   display: flex;
@@ -1022,13 +1032,13 @@ button:disabled {
   border: 1px solid var(--border);
   border-radius: 7px;
   background: color-mix(in srgb, var(--panel) 88%, transparent);
-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.18);
+  box-shadow: var(--shadow-md);
 }
 
 .gve-canvas-toolbar button { width: 26px; height: 26px; padding: 0; border: 0; background: transparent; color: var(--text-muted); font-size: 16px; line-height: 1; }
 .gve-canvas-toolbar button:hover { background: var(--panel-2); color: var(--text); }
 .gve-canvas-toolbar .gve-zoom-value { width: 44px; font-size: 10px; font-weight: 700; }
-.gve-flow-stack { width: min(100%, 760px); min-width: 520px; margin: 0 auto; }
+.gve-flow-stack { width: min(100%, 760px); min-width: min(520px, 100%); margin: 0 auto; }
 .gve-empty-quick-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin: 4px 0 5px; }
 .gve-empty-quick-actions button { padding: 6px 9px; border-color: color-mix(in srgb, var(--accent) 35%, var(--border)); background: color-mix(in srgb, var(--accent) 8%, var(--panel-2)); color: var(--text); font-size: 11px; }
 
@@ -1050,7 +1060,7 @@ button:disabled {
   border: 1px solid var(--border);
   border-radius: 12px;
   background: var(--panel);
-  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.42);
+  box-shadow: var(--shadow-lg);
 }
 
 .gve-about-hero { display: flex; align-items: center; gap: 13px; padding: 22px; border-bottom: 1px solid var(--border); background: color-mix(in srgb, var(--accent) 7%, var(--panel)); }
@@ -1083,6 +1093,22 @@ button:disabled {
 .gve-command-empty { padding: 24px 12px; color: var(--text-muted); text-align: center; }
 .gve-command-footer { display: flex; gap: 16px; padding: 8px 13px; border-top: 1px solid var(--border); color: var(--text-muted); font-size: 10px; }
 
+.gve-confirm-dialog { width: min(480px, 100%); }
+.gve-dialog-input { width: 100%; border: 1px solid var(--border); border-radius: 6px; outline: none; background: var(--panel-2); color: var(--text); padding: 9px; }
+.gve-dialog-input:focus { border-color: var(--accent); }
+.gve-toast-region { position: fixed; z-index: 40; right: 18px; bottom: 52px; display: flex; width: min(360px, calc(100% - 36px)); flex-direction: column; gap: 7px; pointer-events: none; }
+.gve-toast { display: flex; align-items: center; gap: 9px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--panel); box-shadow: var(--shadow-md); color: var(--text); font-size: 11px; animation: gve-toast-in 180ms ease-out both; }
+.gve-toast > span { display: grid; width: 18px; height: 18px; place-items: center; border: 1px solid currentColor; border-radius: 5px; font-size: 10px; font-weight: 800; }
+.gve-toast-success { border-color: color-mix(in srgb, var(--ok) 45%, var(--border)); color: var(--ok); }
+.gve-toast-info { border-color: color-mix(in srgb, var(--accent) 45%, var(--border)); color: var(--accent); }
+.gve-toast-error { border-color: color-mix(in srgb, var(--error) 50%, var(--border)); color: var(--error); }
+.gve-flow-loading-skeleton, .gve-validation-skeleton { display: flex; flex-direction: column; gap: 9px; padding: 12px; border: 1px solid var(--border); border-radius: 8px; background: color-mix(in srgb, var(--panel) 86%, transparent); }
+.gve-flow-loading-skeleton { margin: 0 14px 4px; }
+.gve-flow-loading-skeleton span, .gve-validation-skeleton span { display: block; height: 10px; border-radius: 999px; background: linear-gradient(90deg, var(--panel-2), color-mix(in srgb, var(--accent) 22%, var(--panel-2)), var(--panel-2)); background-size: 220% 100%; animation: gve-skeleton-shimmer 900ms ease-in-out infinite; }
+.gve-flow-loading-skeleton span:nth-child(2) { width: 72%; }.gve-flow-loading-skeleton span:nth-child(3) { width: 86%; }
+.gve-validation-skeleton { max-width: 900px; margin: 0 auto; padding: 18px; }.gve-validation-skeleton span { height: 46px; border-radius: 8px; }
+.gve-validation-skeleton span:nth-child(2) { width: 92%; }.gve-validation-skeleton span:nth-child(3) { width: 96%; }.gve-validation-skeleton span:nth-child(4) { width: 78%; }
+
 .gve-menubar {
   position: relative;
   z-index: 8;
@@ -1093,7 +1119,7 @@ button:disabled {
   padding: 0 12px;
   border-bottom: 1px solid var(--border);
   background: color-mix(in srgb, var(--panel) 92%, var(--bg));
-  box-shadow: 0 3px 16px rgba(0, 0, 0, 0.12);
+  box-shadow: var(--shadow-sm);
 }
 
 .gve-menu-groups { display: flex; align-items: stretch; height: 100%; gap: 2px; }
@@ -1101,7 +1127,7 @@ button:disabled {
 .gve-menu-trigger { height: 28px; padding: 4px 10px; border: 1px solid transparent; border-radius: 5px; background: transparent; color: var(--text-muted); font-size: 11px; }
 .gve-menu-trigger:hover,
 .gve-menu-trigger-open { border-color: var(--border); background: var(--panel-2); color: var(--text); }
-.gve-menu-popover { position: absolute; top: 31px; left: 0; display: flex; min-width: 210px; flex-direction: column; gap: 2px; padding: 6px; border: 1px solid var(--border); border-radius: 8px; background: var(--panel); box-shadow: 0 14px 36px rgba(0, 0, 0, 0.35); animation: gve-menu-in 140ms ease-out both; transform-origin: top left; }
+.gve-menu-popover { position: absolute; top: 31px; left: 0; display: flex; min-width: 210px; flex-direction: column; gap: 2px; padding: 6px; border: 1px solid var(--border); border-radius: 8px; background: var(--panel); box-shadow: var(--shadow-lg); animation: gve-menu-in 140ms ease-out both; transform-origin: top left; }
 .gve-menu-item { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 18px; padding: 8px 9px; border: 1px solid transparent; border-radius: 5px; background: transparent; color: var(--text); text-align: left; font-size: 11px; }
 .gve-menu-item:hover:not(:disabled) { border-color: color-mix(in srgb, var(--accent) 35%, var(--border)); background: color-mix(in srgb, var(--accent) 9%, var(--panel-2)); }
 .gve-menu-item kbd { color: var(--text-muted); font-size: 9px; }
@@ -1122,12 +1148,14 @@ button:disabled {
 @keyframes gve-block-in { from { opacity: 0; transform: translateY(7px) scale(.99); } to { opacity: 1; transform: translateY(0) scale(1); } }
 @keyframes gve-modal-in { from { opacity: 0; transform: translateY(10px) scale(.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
 @keyframes gve-pulse { 0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 0%, transparent); } 50% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 12%, transparent); } }
+@keyframes gve-toast-in { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes gve-skeleton-shimmer { from { background-position: 100% 0; } to { background-position: -100% 0; } }
 
 .gve-shell { animation: gve-shell-in 420ms cubic-bezier(.22, .8, .24, 1) both; }
 .gve-palette { animation: gve-panel-in 420ms 70ms cubic-bezier(.22, .8, .24, 1) both; }
 .gve-inspector { animation: gve-panel-in-right 420ms 110ms cubic-bezier(.22, .8, .24, 1) both; }
 .gve-block { animation: gve-block-in 300ms cubic-bezier(.22, .8, .24, 1) both; transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease, background 160ms ease; }
-.gve-block:hover { transform: translateY(-2px); box-shadow: 0 11px 27px rgba(0, 0, 0, .2); }
+.gve-block:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
 .gve-block-slot:nth-child(2) .gve-block { animation-delay: 35ms; }
 .gve-block-slot:nth-child(3) .gve-block { animation-delay: 70ms; }
 .gve-block-slot:nth-child(4) .gve-block { animation-delay: 105ms; }
@@ -1151,6 +1179,11 @@ button, input, select, textarea { transition: border-color 160ms ease, backgroun
 .gve-shell-focus .gve-palette,
 .gve-shell-focus .gve-inspector { visibility: hidden; pointer-events: none; }
 .gve-shell-focus .gve-header { grid-column: 1 / -1; }
+
+.gve-panel-rail-toggle { display: none; position: absolute; z-index: 5; top: 12px; left: 50%; width: 32px; height: 32px; padding: 0; border-color: var(--border); background: var(--panel-2); color: var(--accent); font-size: 20px; transform: translateX(-50%); }
+.gve-app-compact .gve-panel-rail-toggle { display: grid; place-items: center; }
+.gve-panel-rail > *:not(.gve-panel-rail-toggle) { display: none; }
+.gve-app-compact .gve-palette.gve-panel-rail, .gve-app-compact .gve-inspector.gve-panel-rail { background: color-mix(in srgb, var(--panel) 92%, var(--accent)); }
 
 /* Keep the application menu, flow toolbar, and command search in one row. */
 .gve-app { grid-template-rows: minmax(0, 1fr); }
@@ -1176,7 +1209,7 @@ button, input, select, textarea { transition: border-color 160ms ease, backgroun
 .gve-canvas-tool-active { border-color: var(--accent) !important; background: color-mix(in srgb, var(--accent) 14%, var(--panel-2)) !important; color: var(--accent) !important; }
 .gve-canvas-toolbar-divider { width: 1px; margin: 4px 2px; background: var(--border); }
 
-.gve-outline-panel { position: absolute; z-index: 5; top: 54px; left: 14px; width: min(300px, calc(100% - 28px)); max-height: calc(100% - 68px); overflow: hidden; border: 1px solid var(--border); border-radius: 10px; background: color-mix(in srgb, var(--panel) 96%, transparent); box-shadow: 0 18px 48px rgba(0, 0, 0, .36); animation: gve-modal-in 180ms ease-out both; }
+.gve-outline-panel { position: absolute; z-index: 5; top: 54px; left: 14px; width: min(300px, calc(100% - 28px)); max-height: calc(100% - 68px); overflow: hidden; border: 1px solid var(--border); border-radius: 10px; background: color-mix(in srgb, var(--panel) 96%, transparent); box-shadow: var(--shadow-lg); animation: gve-modal-in 180ms ease-out both; }
 .gve-outline-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 13px; border-bottom: 1px solid var(--border); }
 .gve-outline-header strong { display: block; margin-top: 3px; color: var(--text); font-size: 12px; }
 .gve-outline-header button { width: 26px; height: 26px; padding: 0; border: 0; background: transparent; color: var(--text-muted); font-size: 18px; }
@@ -1191,7 +1224,8 @@ button, input, select, textarea { transition: border-color 160ms ease, backgroun
 .gve-validation-eyebrow { color: var(--accent); font-size: 9px; font-weight: 800; letter-spacing: .14em; }
 .gve-validation-header h2 { margin: 6px 0 0; color: var(--text); font-size: 21px; }
 .gve-validation-summary { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
-.gve-validation-pill { padding: 5px 8px; border: 1px solid var(--border); border-radius: 999px; font-size: 10px; font-weight: 700; }
+.gve-validation-pill { display: inline-flex; align-items: center; gap: 5px; padding: 5px 8px; border: 1px solid var(--border); border-radius: 999px; font-size: 10px; font-weight: 700; }
+.gve-validation-pill-icon { display: grid; width: 15px; height: 15px; place-items: center; border: 1px solid currentColor; border-radius: 4px; font-size: 9px; line-height: 1; }
 .gve-validation-error { border-color: color-mix(in srgb, var(--error) 48%, var(--border)); color: var(--error); }
 .gve-validation-warning { border-color: color-mix(in srgb, var(--warn) 48%, var(--border)); color: var(--warn); }
 .gve-validation-info { border-color: color-mix(in srgb, #60a5fa 48%, var(--border)); color: #60a5fa; }
@@ -1209,7 +1243,7 @@ button, input, select, textarea { transition: border-color 160ms ease, backgroun
 .gve-validation-empty p { margin: 0; color: var(--text-muted); }
 .gve-template-launcher { display: flex; width: 100%; align-items: center; justify-content: center; gap: 7px; margin-bottom: 8px; padding: 7px; border-color: color-mix(in srgb, var(--accent) 35%, var(--border)); background: color-mix(in srgb, var(--accent) 8%, var(--panel-2)); color: var(--text); font-size: 11px; font-weight: 700; }
 .gve-template-launcher span { color: var(--accent); }
-.gve-template-dialog { width: min(620px, 100%); overflow: hidden; border: 1px solid var(--border); border-radius: 12px; background: var(--panel); box-shadow: 0 24px 70px rgba(0,0,0,.42); animation: gve-modal-in 220ms cubic-bezier(.22,.8,.24,1) both; }
+.gve-template-dialog { width: min(620px, 100%); overflow: hidden; border: 1px solid var(--border); border-radius: 12px; background: var(--panel); box-shadow: var(--shadow-lg); animation: gve-modal-in 220ms cubic-bezier(.22,.8,.24,1) both; }
 .gve-template-header { display: flex; align-items: start; justify-content: space-between; gap: 18px; padding: 22px; border-bottom: 1px solid var(--border); }
 .gve-template-header h2 { margin: 6px 0 3px; color: var(--text); font-size: 18px; }
 .gve-template-header p { margin: 0; color: var(--text-muted); font-size: 11px; }

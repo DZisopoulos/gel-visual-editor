@@ -14,9 +14,15 @@ function fieldClass(field: FieldDef, value: string): string {
 }
 
 function Inspector({
-  onResizeStart
+  onResizeStart,
+  compact = false,
+  collapsed = false,
+  onToggleCollapsed
 }: {
   onResizeStart?: (event: React.PointerEvent) => void
+  compact?: boolean
+  collapsed?: boolean
+  onToggleCollapsed?: () => void
 }): React.JSX.Element {
   const flow = useGve((s) => s.flow)
   const selectedId = useGve((s) => s.selectedId)
@@ -35,7 +41,8 @@ function Inspector({
 
   if (!selected) {
     return (
-      <aside className="gve-inspector" aria-label="Inspector">
+      <aside className={`gve-inspector${collapsed ? ' gve-panel-rail' : ''}`} aria-label="Inspector">
+        {compact && <button type="button" className="gve-panel-rail-toggle" aria-label={collapsed ? 'Expand inspector' : 'Collapse inspector'} title={collapsed ? 'Expand inspector' : 'Collapse inspector'} onClick={onToggleCollapsed}>{collapsed ? '‹' : '›'}</button>}
         <div
           className="gve-panel-resize gve-panel-resize-left"
           role="separator"
@@ -170,7 +177,8 @@ function Inspector({
   const def = getNodeDef(selected.type)
   const variables = variablesInScope(flow, selected.id)
   return (
-    <aside className="gve-inspector" aria-label="Inspector">
+    <aside className={`gve-inspector${collapsed ? ' gve-panel-rail' : ''}`} aria-label="Inspector">
+      {compact && <button type="button" className="gve-panel-rail-toggle" aria-label={collapsed ? 'Expand inspector' : 'Collapse inspector'} title={collapsed ? 'Expand inspector' : 'Collapse inspector'} onClick={onToggleCollapsed}>{collapsed ? '‹' : '›'}</button>}
       <div
         className="gve-panel-resize gve-panel-resize-left"
         role="separator"

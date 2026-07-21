@@ -31,19 +31,19 @@ function createWindow(): void {
   // all funnel through here, unlike the renderer-side prompts on New and Open.
   const contentsId = mainWindow.webContents.id
   let confirmedClose = false
+  let closeRequestPending = false
   mainWindow.on('close', event => {
     if (confirmedClose || !unsavedContents.has(contentsId)) return
     event.preventDefault()
-    const choice = dialog.showMessageBoxSync(mainWindow, {
-      type: 'warning',
-      buttons: ['Discard changes', 'Cancel'],
-      defaultId: 1,
-      cancelId: 1,
-      title: 'Unsaved changes',
-      message: 'This flow has unsaved changes.',
-      detail: 'Closing now discards them. GVE keeps a recovery draft, but saving is safer.'
-    })
-    if (choice !== 0) return
+    if (closeRequestPending) return
+    closeRequestPending = true
+    mainWindow.webContents.send('gve:window:request-close')
+  })
+
+  ipcMain.on('gve:window:close-response', (event, discard: boolean) => {
+    if (event.sender.id !== contentsId) return
+    closeRequestPending = false
+    if (!discard) return
     confirmedClose = true
     mainWindow.close()
   })
