@@ -30,6 +30,13 @@ describe('canvas', () => {
     ).toBeTruthy()
     expect(document.querySelector('.gve-empty-state .gve-dropzone')).toBeTruthy()
   })
+  it('offers quick-add actions and zoom controls', () => {
+    render(<Canvas />)
+    fireEvent.click(screen.getByRole('button', { name: 'Add SQL Query' }))
+    expect(useGve.getState().flow.blocks[0].type).toBe('sql-query')
+    expect(screen.getByRole('button', { name: 'Zoom out' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Zoom in' })).toBeTruthy()
+  })
   it('clears selection when the canvas background is clicked', () => {
     useGve.getState().addBlock('log-message', { parentId: null, index: 0 })
     useGve.getState().select(useGve.getState().flow.blocks[0].id)

@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import Canvas from './components/Canvas'
+import CommandPalette from './components/CommandPalette'
+import AboutDialog from './components/AboutDialog'
 import Footer from './components/Footer'
 import Header from './components/Header'
 import Inspector from './components/Inspector'
@@ -13,6 +15,7 @@ import {
   type ThemeId,
   type ThemePreferences
 } from './theme'
+import { useGve } from './store'
 
 const LAYOUT_KEY = 'gve-layout-preferences'
 interface LayoutPreferences {
@@ -41,6 +44,12 @@ function App(): React.JSX.Element {
   const [activeView, setActiveView] = useState<'flow' | 'xml'>('flow')
   const [themePreferences, setThemePreferences] = useState<ThemePreferences>(loadThemePreferences)
   const [layout, setLayout] = useState<LayoutPreferences>(loadLayoutPreferences)
+  const [commandOpen, setCommandOpen] = useState(false)
+  const [aboutOpen, setAboutOpen] = useState(false)
+  const selectedId = useGve(s => s.selectedId)
+  const undo = useGve(s => s.undo)
+  const redo = useGve(s => s.redo)
+  const remove = useGve(s => s.remove)
   const resizeRef = useRef<{
     kind: 'palette' | 'inspector'
     startX: number
@@ -76,6 +85,20 @@ function App(): React.JSX.Element {
       window.removeEventListener('pointerup', onUp)
     }
   }, [])
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent): void => {
+      const target = event.target as HTMLElement | null
+      const isTyping = target?.tagName === 'INPUT' || target?.tagName === 'TEXTAREA' || target?.tagName === 'SELECT' || target?.isContentEditable
+      const modifier = event.ctrlKey || event.metaKey
+      if (modifier && event.key.toLowerCase() === 'k') { event.preventDefault(); setCommandOpen(true); return }
+      if (isTyping || commandOpen) return
+      if (modifier && event.key.toLowerCase() === 'z') { event.preventDefault(); event.shiftKey ? redo() : undo(); return }
+      if (modifier && event.key.toLowerCase() === 'y') { event.preventDefault(); redo(); return }
+      if ((event.key === 'Delete' || event.key === 'Backspace') && selectedId) { event.preventDefault(); remove(selectedId) }
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [commandOpen, redo, remove, selectedId, undo])
 
   const startResize = (kind: 'palette' | 'inspector', event: React.PointerEvent): void => {
     event.preventDefault()
@@ -140,7 +163,10 @@ function App(): React.JSX.Element {
         xmlTheme={themePreferences.xml}
         onAppThemeChange={(value) => updateTheme('app', value)}
         onXmlThemeChange={(value) => updateTheme('xml', value)}
+        onAbout={() => setAboutOpen(true)}
       />
+      <CommandPalette open={commandOpen} onClose={() => setCommandOpen(false)} />
+      <AboutDialog open={aboutOpen} onClose={() => setAboutOpen(false)} />
     </div>
   )
 }

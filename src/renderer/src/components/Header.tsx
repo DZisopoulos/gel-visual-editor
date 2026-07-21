@@ -28,6 +28,8 @@ function Header(): React.JSX.Element {
   const undo = useGve(s => s.undo)
   const redo = useGve(s => s.redo)
 
+  const countBlocks = (blocks: typeof flow.blocks): number => blocks.reduce((count, block) => count + 1 + (block.children ? countBlocks(block.children) : 0), 0)
+
   const suggestedName = (): string => flow.meta.name.replace(/[<>:"/\\|?*]/g, '-').trim() || 'Untitled Flow'
 
   const handleSave = async (): Promise<void> => {
@@ -74,6 +76,11 @@ function Header(): React.JSX.Element {
         value={name}
         onChange={event => updateMeta({ name: event.target.value })}
       />
+      <div className={`gve-flow-status${dirty ? ' gve-flow-status-dirty' : ''}`} aria-label={dirty ? 'Unsaved changes' : 'Flow ready'}>
+        <span className="gve-flow-status-dot" aria-hidden="true" />
+        <span>{dirty ? 'Unsaved changes' : 'Ready'}</span>
+        <span className="gve-flow-status-count">{countBlocks(flow.blocks)} blocks</span>
+      </div>
       <div className="gve-header-actions">
         <button type="button" className="gve-icon-button gve-icon-undo" aria-label="Undo" title="Undo" onClick={undo} disabled={past.length === 0}><Icon name="undo" /></button>
         <button type="button" className="gve-icon-button gve-icon-redo" aria-label="Redo" title="Redo" onClick={redo} disabled={future.length === 0}><Icon name="redo" /></button>

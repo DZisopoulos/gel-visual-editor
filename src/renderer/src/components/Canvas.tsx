@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { Block } from '../../../shared/flow'
 import { getNodeDef } from '../../../shared/registry'
 import type { DropTarget } from '../../../shared/tree'
@@ -72,10 +72,29 @@ function BlockList({
 function Canvas(): React.JSX.Element {
   const flow = useGve((s) => s.flow)
   const select = useGve((s) => s.select)
+  const addBlock = useGve((s) => s.addBlock)
+  const [zoom, setZoom] = useState(1)
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent): void => {
+      if (!(event.ctrlKey || event.metaKey)) return
+      if (event.key === '+' || event.key === '=') { event.preventDefault(); setZoom((value) => Math.min(1.4, Number((value + 0.1).toFixed(1)))) }
+      if (event.key === '-') { event.preventDefault(); setZoom((value) => Math.max(0.7, Number((value - 0.1).toFixed(1)))) }
+      if (event.key === '0') { event.preventDefault(); setZoom(1) }
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [])
 
   return (
     <main className="gve-canvas" aria-label="Flow canvas" onClick={() => select(null)}>
+      <div className="gve-canvas-toolbar" aria-label="Canvas zoom controls" onClick={(event) => event.stopPropagation()}>
+        <button type="button" aria-label="Zoom out" title="Zoom out (Ctrl/Cmd -)" onClick={() => setZoom((value) => Math.max(0.7, Number((value - 0.1).toFixed(1))))}>−</button>
+        <button type="button" className="gve-zoom-value" aria-label="Reset zoom" title="Reset zoom (Ctrl/Cmd 0)" onClick={() => setZoom(1)}>{Math.round(zoom * 100)}%</button>
+        <button type="button" aria-label="Zoom in" title="Zoom in (Ctrl/Cmd +)" onClick={() => setZoom((value) => Math.min(1.4, Number((value + 0.1).toFixed(1))))}>+</button>
+      </div>
       <div className="gve-canvas-scroll">
+        <div className="gve-flow-stack" style={{ zoom }}>
         <div className="gve-flow-cap gve-flow-start">
           <span>START</span>
           <div className="gve-parameter-chips">
@@ -93,12 +112,19 @@ function Canvas(): React.JSX.Element {
             </div>
             <h2>Start building your flow</h2>
             <p>Drag a block here, or double-click one in the palette to add it.</p>
+            <div className="gve-empty-quick-actions">
+              {(['sql-query', 'for-each', 'log-message'] as const).map((type) => {
+                const label = type === 'sql-query' ? 'Add SQL Query' : type === 'for-each' ? 'Add For Each' : 'Add Log Message'
+                return <button type="button" key={type} onClick={(event) => { event.stopPropagation(); addBlock(type, { parentId: null, index: flow.blocks.length }) }}>{label}</button>
+              })}
+            </div>
             <DropZone target={{ parentId: null, index: 0 }} />
           </div>
         ) : (
           <BlockList blocks={flow.blocks} parentId={null} />
         )}
         <div className="gve-flow-cap gve-flow-end">END</div>
+        </div>
       </div>
     </main>
   )

@@ -31,4 +31,21 @@ describe('app shell', () => {
       'true'
     )
   })
+
+  it('opens the About dialog from the footer', () => {
+    render(<App />)
+    fireEvent.click(screen.getByRole('button', { name: 'About' }))
+    expect(screen.getByRole('dialog', { name: 'GEL Visual Editor' })).toBeTruthy()
+    expect(screen.getByText('Created by Dimitrios Zisopoulos')).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: 'Done' }))
+    expect(document.querySelector('.gve-about-dialog')).toBeNull()
+  })
+
+  it('opens the command palette with Ctrl-K', () => {
+    render(<App />)
+    fireEvent.keyDown(window, { key: 'k', ctrlKey: true })
+    expect(screen.getByRole('dialog', { name: 'Command palette' })).toBeTruthy()
+    fireEvent.keyDown(screen.getByRole('textbox', { name: 'Search commands' }), { key: 'Escape' })
+    expect(document.querySelector('.gve-command-palette')).toBeNull()
+  })
 })
