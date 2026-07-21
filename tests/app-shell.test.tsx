@@ -15,14 +15,20 @@ describe('app shell', () => {
     expect(document.querySelector('.gve-palette')).toBeTruthy()
     expect(document.querySelector('.gve-canvas')).toBeTruthy()
     expect(document.querySelector('.gve-inspector')).toBeTruthy()
+    expect(screen.getByRole('separator', { name: 'Resize block palette' })).toBeTruthy()
+    expect(screen.getByRole('separator', { name: 'Resize inspector' })).toBeTruthy()
     expect(screen.getByRole('tab', { name: 'Flow' }).getAttribute('aria-selected')).toBe('true')
-    expect(screen.getByRole('tab', { name: 'XML Preview' }).getAttribute('aria-selected')).toBe('false')
+    expect(screen.getByRole('tab', { name: 'XML Preview' }).getAttribute('aria-selected')).toBe(
+      'false'
+    )
     expect(document.querySelector('.gve-xmlpane')).toBeNull()
     expect(screen.getByDisplayValue(/Untitled Flow|Test/)).toBeTruthy()
 
     fireEvent.click(screen.getByRole('tab', { name: 'XML Preview' }))
     expect(document.querySelector('.gve-canvas')).toBeNull()
     expect(document.querySelector('.gve-xmlpane')).toBeTruthy()
-    expect(screen.getByRole('tab', { name: 'XML Preview' }).getAttribute('aria-selected')).toBe('true')
+    expect(screen.getByRole('tab', { name: 'XML Preview' }).getAttribute('aria-selected')).toBe(
+      'true'
+    )
   })
 })

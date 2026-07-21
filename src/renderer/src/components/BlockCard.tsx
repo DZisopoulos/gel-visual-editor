@@ -10,11 +10,11 @@ interface BlockCardProps {
 
 function BlockCard({ block, children }: BlockCardProps): React.JSX.Element {
   const def = getNodeDef(block.type)
-  const selected = useGve(s => s.selectedId === block.id)
-  const select = useGve(s => s.select)
-  const remove = useGve(s => s.remove)
-  const toggleEnabled = useGve(s => s.toggleEnabled)
-  const summaryField = def.fields.find(field => block.props[field.key])
+  const selected = useGve((s) => s.selectedId === block.id)
+  const select = useGve((s) => s.select)
+  const remove = useGve((s) => s.remove)
+  const toggleEnabled = useGve((s) => s.toggleEnabled)
+  const summaryField = def.fields.find((field) => block.props[field.key])
   const summary = summaryField ? block.props[summaryField.key] : ''
 
   return (
@@ -23,18 +23,18 @@ function BlockCard({ block, children }: BlockCardProps): React.JSX.Element {
       role="button"
       tabIndex={0}
       draggable
-      onClick={event => {
+      onClick={(event) => {
         event.stopPropagation()
         select(block.id)
       }}
-      onKeyDown={event => {
+      onKeyDown={(event) => {
         if (event.key === 'Enter' || event.key === ' ') {
           event.preventDefault()
           event.stopPropagation()
           select(block.id)
         }
       }}
-      onDragStart={event => {
+      onDragStart={(event) => {
         event.stopPropagation()
         event.dataTransfer.setData('application/x-gve-move-block', block.id)
         event.dataTransfer.effectAllowed = 'move'
@@ -42,23 +42,41 @@ function BlockCard({ block, children }: BlockCardProps): React.JSX.Element {
       style={{ '--block-color': def.color } as React.CSSProperties}
     >
       <div className="gve-block-head">
+        <span className="gve-block-icon" aria-hidden="true">
+          {def.name.slice(0, 1)}
+        </span>
         <div className="gve-block-title">
           <span className="gve-block-type">{def.name}</span>
-          {block.props.stepName && <span className="gve-block-name">{block.props.stepName}</span>}
+          <span className={`gve-block-name${block.props.stepName ? '' : ' gve-block-name-muted'}`}>
+            {block.props.stepName || 'Unnamed step'}
+          </span>
         </div>
+        <span className="gve-block-grip" aria-hidden="true">
+          ⠿
+        </span>
         <div className="gve-block-actions">
           <button
             type="button"
             aria-label={block.enabled ? `Disable ${def.name}` : `Enable ${def.name}`}
             title={block.enabled ? 'Disable block' : 'Enable block'}
-            onClick={event => { event.stopPropagation(); toggleEnabled(block.id) }}
-          >⏻</button>
+            onClick={(event) => {
+              event.stopPropagation()
+              toggleEnabled(block.id)
+            }}
+          >
+            ⏻
+          </button>
           <button
             type="button"
             aria-label={`Delete ${def.name}`}
             title="Delete block"
-            onClick={event => { event.stopPropagation(); remove(block.id) }}
-          >×</button>
+            onClick={(event) => {
+              event.stopPropagation()
+              remove(block.id)
+            }}
+          >
+            ×
+          </button>
         </div>
       </div>
       {summary && <div className="gve-block-summary">{summary}</div>}

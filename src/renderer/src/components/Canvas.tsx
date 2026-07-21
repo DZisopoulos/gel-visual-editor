@@ -7,20 +7,24 @@ import BlockCard from './BlockCard'
 
 function DropZone({ target }: { target: DropTarget }): React.JSX.Element {
   const [active, setActive] = useState(false)
-  const addBlock = useGve(s => s.addBlock)
-  const move = useGve(s => s.move)
+  const addBlock = useGve((s) => s.addBlock)
+  const move = useGve((s) => s.move)
 
   return (
     <div
       className={`gve-dropzone${active ? ' gve-dropzone-active' : ''}`}
       onDragEnter={() => setActive(true)}
       onDragLeave={() => setActive(false)}
-      onDragOver={event => {
+      onDragOver={(event) => {
         event.preventDefault()
-        event.dataTransfer.dropEffect = event.dataTransfer.types.includes('application/x-gve-new-block') ? 'copy' : 'move'
+        event.dataTransfer.dropEffect = event.dataTransfer.types.includes(
+          'application/x-gve-new-block'
+        )
+          ? 'copy'
+          : 'move'
         setActive(true)
       }}
-      onDrop={event => {
+      onDrop={(event) => {
         event.preventDefault()
         event.stopPropagation()
         setActive(false)
@@ -36,7 +40,13 @@ function DropZone({ target }: { target: DropTarget }): React.JSX.Element {
   )
 }
 
-function BlockList({ blocks, parentId }: { blocks: Block[]; parentId: string | null }): React.JSX.Element {
+function BlockList({
+  blocks,
+  parentId
+}: {
+  blocks: Block[]
+  parentId: string | null
+}): React.JSX.Element {
   return (
     <div className="gve-block-list">
       <DropZone target={{ parentId, index: 0 }} />
@@ -60,8 +70,8 @@ function BlockList({ blocks, parentId }: { blocks: Block[]; parentId: string | n
 }
 
 function Canvas(): React.JSX.Element {
-  const flow = useGve(s => s.flow)
-  const select = useGve(s => s.select)
+  const flow = useGve((s) => s.flow)
+  const select = useGve((s) => s.select)
 
   return (
     <main className="gve-canvas" aria-label="Flow canvas" onClick={() => select(null)}>
@@ -69,12 +79,25 @@ function Canvas(): React.JSX.Element {
         <div className="gve-flow-cap gve-flow-start">
           <span>START</span>
           <div className="gve-parameter-chips">
-            {flow.parameters.map(parameter => (
-              <span className="gve-parameter-chip" key={parameter.name}>{parameter.name}</span>
+            {flow.parameters.map((parameter) => (
+              <span className="gve-parameter-chip" key={parameter.name}>
+                {parameter.name}
+              </span>
             ))}
           </div>
         </div>
-        <BlockList blocks={flow.blocks} parentId={null} />
+        {flow.blocks.length === 0 ? (
+          <div className="gve-empty-state">
+            <div className="gve-empty-icon" aria-hidden="true">
+              ✦
+            </div>
+            <h2>Start building your flow</h2>
+            <p>Drag a block here, or double-click one in the palette to add it.</p>
+            <DropZone target={{ parentId: null, index: 0 }} />
+          </div>
+        ) : (
+          <BlockList blocks={flow.blocks} parentId={null} />
+        )}
         <div className="gve-flow-cap gve-flow-end">END</div>
       </div>
     </main>

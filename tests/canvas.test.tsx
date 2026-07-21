@@ -5,7 +5,12 @@ import { useGve } from '../src/renderer/src/store'
 import { createEmptyFlow } from '../src/shared/flow'
 
 const dt = (type: string, value: string) => ({
-  dataTransfer: { getData: (k: string) => (k === type ? value : ''), types: [type], dropEffect: '', effectAllowed: '' }
+  dataTransfer: {
+    getData: (k: string) => (k === type ? value : ''),
+    types: [type],
+    dropEffect: '',
+    effectAllowed: ''
+  }
 })
 
 describe('canvas', () => {
@@ -16,6 +21,14 @@ describe('canvas', () => {
     render(<Canvas />)
     fireEvent.click(screen.getByText('Log Message'))
     expect(useGve.getState().selectedId).toBe(useGve.getState().flow.blocks[0].id)
+  })
+  it('shows an actionable empty state when no blocks exist', () => {
+    render(<Canvas />)
+    expect(screen.getByText('Start building your flow')).toBeTruthy()
+    expect(
+      screen.getByText('Drag a block here, or double-click one in the palette to add it.')
+    ).toBeTruthy()
+    expect(document.querySelector('.gve-empty-state .gve-dropzone')).toBeTruthy()
   })
   it('clears selection when the canvas background is clicked', () => {
     useGve.getState().addBlock('log-message', { parentId: null, index: 0 })
@@ -51,7 +64,9 @@ describe('canvas', () => {
     const payload: Record<string, string> = {}
     fireEvent.dragStart(label.closest('.gve-block')!, {
       dataTransfer: {
-        setData: (type: string, value: string) => { payload[type] = value },
+        setData: (type: string, value: string) => {
+          payload[type] = value
+        },
         effectAllowed: ''
       }
     })
