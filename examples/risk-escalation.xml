@@ -1,0 +1,113 @@
+<!-- Scans active Clarity PPM projects for budget/schedule variance beyond a -->
+<!-- configurable threshold, classifies risk severity, notifies the PMO by -->
+<!-- email, records an XOG audit trail, and archives a summary report via FTP. -->
+<!--  -->
+<!-- Demo script: exercises every block type supported by GVE. -->
+<gel:script xmlns:core="jelly:core"
+            xmlns:file="jelly:com.niku.union.gel.FileTagLibrary"
+            xmlns:ftp="jelly:com.niku.union.gel.FTPTagLibrary"
+            xmlns:gel="jelly:com.niku.union.gel.GELTagLibrary"
+            xmlns:http="jelly:com.niku.union.gel.HTTPTagLibrary"
+            xmlns:soap="jelly:com.niku.union.gel.SOAPTagLibrary"
+            xmlns:sql="jelly:sql"
+            xmlns:xog="jelly:com.niku.union.gel.XOGTagLibrary">
+  <gel:setDataSource dbId="Niku"/>
+  <gel:parameter var="varianceThresholdPct" default="15"/>
+  <gel:parameter var="notifyList" default="pmo-alerts@example.com"/>
+  <!-- Project Budget Risk Escalation
+Scans active projects, classifies variance severity, notifies PMO,
+writes an XOG audit trail, and archives the run summary via FTP. -->
+  <!-- Step: Load shared helpers -->
+  <core:include file="common/notifyUtils.gel"/>
+  <!-- Step: Resolve notify list -->
+  <core:set var="riskEmailList" value="${notifyList}"/>
+  <!-- Step: Resolve threshold -->
+  <core:set var="thresholdPct" value="${varianceThresholdPct}"/>
+  <gel:log level="INFO">Risk escalation run started; threshold=${thresholdPct}%</gel:log>
+  <!-- Step: Read FTP credentials -->
+  <file:read path="${NIKU_HOME}/config/risk-thresholds.properties" encoding="UTF-8" var="riskConfig"/>
+  <!-- Step: Fetch active projects -->
+  <xog:read url="${NIKU_HOME}/niku/xog" username="" password="" object="project" filter="status='ACTIVE' and isActive=1" var="projectXog"/>
+  <!-- Step: Find projects over variance threshold -->
+  <gel:setDataSource dbId="Niku"/>
+  <sql:query escapeText="false" var="overBudgetProjects">
+    SELECT p.id, p.name, p.budget_cost, p.actual_cost,
+           ((p.actual_cost - p.budget_cost) / NULLIF(p.budget_cost, 0)) * 100 AS variance_pct
+    FROM   inv_investments p
+    WHERE  p.investment_type = 'project'
+    AND    ((p.actual_cost - p.budget_cost) / NULLIF(p.budget_cost, 0)) * 100 &gt; ${thresholdPct}
+    ORDER  BY variance_pct DESC
+  </sql:query>
+  <gel:log level="INFO">Found ${overBudgetProjects.rowCount} project(s) exceeding ${thresholdPct}% variance</gel:log>
+  <!-- disabled: Debug: dump raw XOG payload
+  <gel:log level="DEBUG">projectXog raw payload = ${projectXog}</gel:log>
+  -->
+  <!-- Step: Evaluate each over-budget project -->
+  <core:forEach items="${overBudgetProjects.rows}" var="project">
+    <!-- Evaluate ${project.name} (id=${project.id}) -->
+    <core:choose>
+      <!-- Step: Variance exceeds warning band -->
+      <core:when test="${project.variance_pct &gt; 25}">
+        <!-- Step: Classify severity -->
+        <core:switch on="${project.variance_pct &gt; 50 ? 'CRITICAL' : 'HIGH'}">
+          <core:case value="CRITICAL">
+            <gel:log level="ERROR">CRITICAL overrun on ${project.name}: ${project.variance_pct}%</gel:log>
+          </core:case>
+          <core:case value="HIGH">
+            <gel:log level="WARN">High overrun on ${project.name}: ${project.variance_pct}%</gel:log>
+          </core:case>
+          <core:default>
+            <gel:log level="WARN">Overrun flagged on ${project.name}</gel:log>
+          </core:default>
+        </core:switch>
+        <core:try>
+          <!-- Step: Score risk via external API -->
+          <http:request method="POST" url="https://risk-scoring.example.com/api/v1/score" headers="Content-Type: application/json" var="riskScore">{"projectId":"${project.id}","variancePct":${project.variance_pct}}</http:request>
+          <!-- Step: Check legacy approval status -->
+          <soap:invoke endpoint="https://legacy-pmo.example.com/services/ApprovalService" action="urn:GetApprovalStatus" var="approvalStatus">
+            &lt;GetApprovalStatusRequest&gt;
+              &lt;ProjectId&gt;${project.id}&lt;/ProjectId&gt;
+            &lt;/GetApprovalStatusRequest&gt;
+          </soap:invoke>
+          <!-- Step: Flag project in Clarity -->
+          <xog:write url="${NIKU_HOME}/niku/xog" username="" password="" var="xogWriteResult">
+            &lt;NikuDataBus&gt;
+              &lt;Header version="7.0" externalSource="NIKU" action="write" objectType="project"/&gt;
+              &lt;Projects&gt;
+                &lt;Project code="${project.id}"&gt;
+                  &lt;Custom riskFlag="true" riskScore="${riskScore.score}"/&gt;
+                &lt;/Project&gt;
+              &lt;/Projects&gt;
+            &lt;/NikuDataBus&gt;
+          </xog:write>
+          <!-- Step: Notify PMO -->
+          <gel:email from="gel-automation@example.com" to="${riskEmailList}" cc="" bcc="" subject="Risk escalation: ${project.name}">Project ${project.name} flagged with ${project.variance_pct}% variance.
+Risk score: ${riskScore.score}. Approval status: ${approvalStatus.status}.</gel:email>
+        </core:try>
+        <core:catch var="err">
+          <gel:log level="ERROR">Risk workflow failed for ${project.name}: ${err.message}</gel:log>
+          <!-- Step: Alert admin of failure -->
+          <gel:email from="gel-automation@example.com" to="admin@example.com" cc="" bcc="" subject="GEL script error: risk escalation">Risk escalation failed for ${project.name}: ${err.message}</gel:email>
+        </core:catch>
+      </core:when>
+      <core:otherwise>
+        <gel:log level="INFO">${project.name} within tolerance (${project.variance_pct}%)</gel:log>
+      </core:otherwise>
+    </core:choose>
+  </core:forEach>
+  <!-- Step: Log JVM heap usage (escape hatch) -->
+  <gel:code>
+    <![CDATA[
+      def rt = Runtime.getRuntime()
+      def usedMb = (rt.totalMemory() - rt.freeMemory()) / 1024 / 1024
+      log.info("Heap usage: " + usedMb + " MB")
+    ]]>
+  </gel:code>
+  <!-- Step: Write run summary -->
+  <file:write path="${NIKU_HOME}/logs/risk_escalation_summary.txt" encoding="UTF-8">Risk escalation run completed.
+Projects scanned: ${overBudgetProjects.rowCount}.
+Threshold: ${thresholdPct}%.</file:write>
+  <!-- Step: Archive summary report -->
+  <ftp:transfer operation="upload" host="archive.example.com" username="gelservice" password="${riskConfig.ftpPassword}" local="${NIKU_HOME}/logs/risk_escalation_summary.txt" remote="/archive/ppm/risk_escalation_summary.txt"/>
+  <gel:log level="INFO">Risk escalation run complete.</gel:log>
+</gel:script>

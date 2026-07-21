@@ -1,0 +1,215 @@
+{
+  "gveVersion": "1.0",
+  "meta": {
+    "name": "Project Budget Risk Escalation",
+    "description": "Scans active Clarity PPM projects for budget/schedule variance beyond a\nconfigurable threshold, classifies risk severity, notifies the PMO by\nemail, records an XOG audit trail, and archives a summary report via FTP.\n\nDemo script: exercises every block type supported by GVE.",
+    "scriptType": "standalone"
+  },
+  "parameters": [
+    { "name": "varianceThresholdPct", "type": "number", "default": "15" },
+    { "name": "notifyList", "type": "string", "default": "pmo-alerts@example.com" }
+  ],
+  "datasources": ["Niku"],
+  "blocks": [
+    {
+      "id": "n1", "type": "comment", "enabled": true,
+      "props": { "stepName": "", "message": "Project Budget Risk Escalation\nScans active projects, classifies variance severity, notifies PMO,\nwrites an XOG audit trail, and archives the run summary via FTP." }
+    },
+    {
+      "id": "n2", "type": "include-script", "enabled": true,
+      "props": { "stepName": "Load shared helpers", "file": "common/notifyUtils.gel" }
+    },
+    {
+      "id": "n3", "type": "set-variable", "enabled": true,
+      "props": { "stepName": "Resolve notify list", "varName": "riskEmailList", "value": "${notifyList}" }
+    },
+    {
+      "id": "n4", "type": "set-variable", "enabled": true,
+      "props": { "stepName": "Resolve threshold", "varName": "thresholdPct", "value": "${varianceThresholdPct}" }
+    },
+    {
+      "id": "n5", "type": "log-message", "enabled": true,
+      "props": { "stepName": "", "level": "INFO", "message": "Risk escalation run started; threshold=${thresholdPct}%" }
+    },
+    {
+      "id": "n6", "type": "file-read", "enabled": true,
+      "props": { "stepName": "Read FTP credentials", "path": "${NIKU_HOME}/config/risk-thresholds.properties", "encoding": "UTF-8", "resultVar": "riskConfig" }
+    },
+    {
+      "id": "n7", "type": "xog-read", "enabled": true,
+      "props": { "stepName": "Fetch active projects", "url": "${NIKU_HOME}/niku/xog", "username": "", "password": "", "object": "project", "filter": "status='ACTIVE' and isActive=1", "resultVar": "projectXog" }
+    },
+    {
+      "id": "n8", "type": "sql-query", "enabled": true,
+      "props": {
+        "stepName": "Find projects over variance threshold",
+        "datasource": "Niku",
+        "escapeText": "false",
+        "resultVar": "overBudgetProjects",
+        "sql": "SELECT p.id, p.name, p.budget_cost, p.actual_cost,\n       ((p.actual_cost - p.budget_cost) / NULLIF(p.budget_cost, 0)) * 100 AS variance_pct\nFROM   inv_investments p\nWHERE  p.investment_type = 'project'\nAND    ((p.actual_cost - p.budget_cost) / NULLIF(p.budget_cost, 0)) * 100 > ${thresholdPct}\nORDER  BY variance_pct DESC"
+      }
+    },
+    {
+      "id": "n9", "type": "log-message", "enabled": true,
+      "props": { "stepName": "", "level": "INFO", "message": "Found ${overBudgetProjects.rowCount} project(s) exceeding ${thresholdPct}% variance" }
+    },
+    {
+      "id": "n10", "type": "log-message", "enabled": false,
+      "props": { "stepName": "Debug: dump raw XOG payload", "level": "DEBUG", "message": "projectXog raw payload = ${projectXog}" }
+    },
+    {
+      "id": "n11", "type": "for-each", "enabled": true,
+      "props": { "stepName": "Evaluate each over-budget project", "items": "${overBudgetProjects.rows}", "varName": "project" },
+      "children": [
+        {
+          "id": "n11a", "type": "comment", "enabled": true,
+          "props": { "stepName": "", "message": "Evaluate ${project.name} (id=${project.id})" }
+        },
+        {
+          "id": "n11b", "type": "choose", "enabled": true,
+          "props": { "stepName": "" },
+          "children": [
+            {
+              "id": "n11b1", "type": "when", "enabled": true,
+              "props": { "stepName": "Variance exceeds warning band", "test": "${project.variance_pct > 25}" },
+              "children": [
+                {
+                  "id": "n11b1a", "type": "switch", "enabled": true,
+                  "props": { "stepName": "Classify severity", "value": "${project.variance_pct > 50 ? 'CRITICAL' : 'HIGH'}" },
+                  "children": [
+                    {
+                      "id": "n11b1a1", "type": "case", "enabled": true,
+                      "props": { "stepName": "", "value": "CRITICAL" },
+                      "children": [
+                        { "id": "n11b1a1x", "type": "log-message", "enabled": true, "props": { "stepName": "", "level": "ERROR", "message": "CRITICAL overrun on ${project.name}: ${project.variance_pct}%" } }
+                      ]
+                    },
+                    {
+                      "id": "n11b1a2", "type": "case", "enabled": true,
+                      "props": { "stepName": "", "value": "HIGH" },
+                      "children": [
+                        { "id": "n11b1a2x", "type": "log-message", "enabled": true, "props": { "stepName": "", "level": "WARN", "message": "High overrun on ${project.name}: ${project.variance_pct}%" } }
+                      ]
+                    },
+                    {
+                      "id": "n11b1a3", "type": "default", "enabled": true,
+                      "props": { "stepName": "" },
+                      "children": [
+                        { "id": "n11b1a3x", "type": "log-message", "enabled": true, "props": { "stepName": "", "level": "WARN", "message": "Overrun flagged on ${project.name}" } }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "n11b1b", "type": "try", "enabled": true,
+                  "props": { "stepName": "" },
+                  "children": [
+                    {
+                      "id": "n11b1b1", "type": "http-call", "enabled": true,
+                      "props": {
+                        "stepName": "Score risk via external API",
+                        "method": "POST",
+                        "url": "https://risk-scoring.example.com/api/v1/score",
+                        "headers": "Content-Type: application/json",
+                        "body": "{\"projectId\":\"${project.id}\",\"variancePct\":${project.variance_pct}}",
+                        "resultVar": "riskScore"
+                      }
+                    },
+                    {
+                      "id": "n11b1b2", "type": "soap-invoke", "enabled": true,
+                      "props": {
+                        "stepName": "Check legacy approval status",
+                        "endpoint": "https://legacy-pmo.example.com/services/ApprovalService",
+                        "action": "urn:GetApprovalStatus",
+                        "request": "<GetApprovalStatusRequest>\n  <ProjectId>${project.id}</ProjectId>\n</GetApprovalStatusRequest>",
+                        "resultVar": "approvalStatus"
+                      }
+                    },
+                    {
+                      "id": "n11b1b3", "type": "xog-write", "enabled": true,
+                      "props": {
+                        "stepName": "Flag project in Clarity",
+                        "url": "${NIKU_HOME}/niku/xog",
+                        "username": "", "password": "",
+                        "resultVar": "xogWriteResult",
+                        "payload": "<NikuDataBus>\n  <Header version=\"7.0\" externalSource=\"NIKU\" action=\"write\" objectType=\"project\"/>\n  <Projects>\n    <Project code=\"${project.id}\">\n      <Custom riskFlag=\"true\" riskScore=\"${riskScore.score}\"/>\n    </Project>\n  </Projects>\n</NikuDataBus>"
+                      }
+                    },
+                    {
+                      "id": "n11b1b4", "type": "email", "enabled": true,
+                      "props": {
+                        "stepName": "Notify PMO",
+                        "from": "gel-automation@example.com",
+                        "to": "${riskEmailList}",
+                        "cc": "", "bcc": "",
+                        "subject": "Risk escalation: ${project.name}",
+                        "body": "Project ${project.name} flagged with ${project.variance_pct}% variance.\nRisk score: ${riskScore.score}. Approval status: ${approvalStatus.status}."
+                      }
+                    }
+                  ]
+                },
+                {
+                  "id": "n11b1c", "type": "catch", "enabled": true,
+                  "props": { "stepName": "", "varName": "err" },
+                  "children": [
+                    { "id": "n11b1c1", "type": "log-message", "enabled": true, "props": { "stepName": "", "level": "ERROR", "message": "Risk workflow failed for ${project.name}: ${err.message}" } },
+                    {
+                      "id": "n11b1c2", "type": "email", "enabled": true,
+                      "props": {
+                        "stepName": "Alert admin of failure",
+                        "from": "gel-automation@example.com",
+                        "to": "admin@example.com",
+                        "cc": "", "bcc": "",
+                        "subject": "GEL script error: risk escalation",
+                        "body": "Risk escalation failed for ${project.name}: ${err.message}"
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "n11b2", "type": "otherwise", "enabled": true,
+              "props": { "stepName": "" },
+              "children": [
+                { "id": "n11b2x", "type": "log-message", "enabled": true, "props": { "stepName": "", "level": "INFO", "message": "${project.name} within tolerance (${project.variance_pct}%)" } }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "n12", "type": "raw-gel", "enabled": true,
+      "props": {
+        "stepName": "Log JVM heap usage (escape hatch)",
+        "xml": "<gel:code>\n  <![CDATA[\n    def rt = Runtime.getRuntime()\n    def usedMb = (rt.totalMemory() - rt.freeMemory()) / 1024 / 1024\n    log.info(\"Heap usage: \" + usedMb + \" MB\")\n  ]]>\n</gel:code>"
+      }
+    },
+    {
+      "id": "n13", "type": "file-write", "enabled": true,
+      "props": {
+        "stepName": "Write run summary",
+        "path": "${NIKU_HOME}/logs/risk_escalation_summary.txt",
+        "encoding": "UTF-8",
+        "content": "Risk escalation run completed.\nProjects scanned: ${overBudgetProjects.rowCount}.\nThreshold: ${thresholdPct}%."
+      }
+    },
+    {
+      "id": "n14", "type": "ftp-transfer", "enabled": true,
+      "props": {
+        "stepName": "Archive summary report",
+        "operation": "upload",
+        "host": "archive.example.com",
+        "username": "gelservice",
+        "password": "${riskConfig.ftpPassword}",
+        "localPath": "${NIKU_HOME}/logs/risk_escalation_summary.txt",
+        "remotePath": "/archive/ppm/risk_escalation_summary.txt"
+      }
+    },
+    {
+      "id": "n15", "type": "log-message", "enabled": true,
+      "props": { "stepName": "", "level": "INFO", "message": "Risk escalation run complete." }
+    }
+  ]
+}
