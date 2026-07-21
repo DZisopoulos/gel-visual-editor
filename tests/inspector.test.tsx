@@ -42,6 +42,43 @@ describe('inspector', () => {
     expect((screen.getByLabelText('Flow settings name') as HTMLInputElement).value).toBe('From disk')
   })
 
+  it('offers the flow datasources as options on a SQL Query block', () => {
+    act(() => { useGve.getState().updateDatasources(['Niku', 'Warehouse']) })
+    useGve.getState().addBlock('sql-query', { parentId: null, index: 0 })
+    render(<Inspector />)
+
+    const datasource = screen.getByLabelText('Datasource') as HTMLSelectElement
+    expect(Array.from(datasource.options, (option) => option.value)).toEqual([
+      '', 'Niku', 'Warehouse'
+    ])
+
+    fireEvent.change(datasource, { target: { value: 'Warehouse' } })
+    expect(useGve.getState().flow.blocks[0].props.datasource).toBe('Warehouse')
+  })
+
+  it('keeps a datasource value that is not in the flow list', () => {
+    useGve.getState().addBlock('sql-query', { parentId: null, index: 0 })
+    const id = useGve.getState().flow.blocks[0].id
+    act(() => { useGve.getState().updateProps(id, { datasource: 'Legacy' }) })
+    render(<Inspector />)
+
+    const datasource = screen.getByLabelText('Datasource') as HTMLSelectElement
+    expect(Array.from(datasource.options, (option) => option.value)).toContain('Legacy')
+    expect(datasource.value).toBe('Legacy')
+  })
+
+  it('edits the flow datasource list', () => {
+    render(<Inspector />)
+    fireEvent.click(screen.getByRole('button', { name: 'Add datasource' }))
+    expect(useGve.getState().flow.datasources).toEqual(['Niku', ''])
+
+    fireEvent.change(screen.getByLabelText('Datasource 2'), { target: { value: 'Warehouse' } })
+    expect(useGve.getState().flow.datasources).toEqual(['Niku', 'Warehouse'])
+
+    fireEvent.click(screen.getByRole('button', { name: 'Remove datasource 1' }))
+    expect(useGve.getState().flow.datasources).toEqual(['Warehouse'])
+  })
+
   it('adds a flow parameter when nothing is selected', () => {
     render(<Inspector />)
     fireEvent.click(screen.getByRole('button', { name: 'Add parameter' }))

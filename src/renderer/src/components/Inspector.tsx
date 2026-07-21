@@ -23,6 +23,7 @@ function Inspector({
   const updateProps = useGve((s) => s.updateProps)
   const updateMeta = useGve((s) => s.updateMeta)
   const updateParameters = useGve((s) => s.updateParameters)
+  const updateDatasources = useGve((s) => s.updateDatasources)
   const selected = selectedId ? findBlock(flow.blocks, selectedId) : null
 
   const updateParameter = (index: number, patch: Partial<FlowParameter>): void => {
@@ -71,7 +72,48 @@ function Inspector({
               <option value="process-step">Process step</option>
               <option value="standalone">Standalone</option>
             </select>
+            <span className="gve-field-hint">
+              {flow.meta.scriptType === 'standalone'
+                ? 'Declares its own datasources and parameters.'
+                : 'Clarity supplies the datasource and parameter values.'}
+            </span>
           </label>
+
+          <div className="gve-parameters-head">
+            <span>Datasources</span>
+            <button
+              type="button"
+              onClick={() => updateDatasources([...flow.datasources, ''])}
+            >
+              Add datasource
+            </button>
+          </div>
+          <div className="gve-parameters">
+            {flow.datasources.map((datasource, index) => (
+              <div className="gve-datasource-row" key={index}>
+                <input
+                  aria-label={`Datasource ${index + 1}`}
+                  placeholder="Niku"
+                  value={datasource}
+                  onChange={(event) =>
+                    updateDatasources(
+                      flow.datasources.map((entry, i) => (i === index ? event.target.value : entry)),
+                      `datasource:${index}`
+                    )
+                  }
+                />
+                <button
+                  type="button"
+                  aria-label={`Remove datasource ${index + 1}`}
+                  onClick={() =>
+                    updateDatasources(flow.datasources.filter((_, i) => i !== index))
+                  }
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
 
           <div className="gve-parameters-head">
             <span>Parameters</span>
@@ -152,7 +194,26 @@ function Inspector({
           return (
             <label className="gve-field" key={field.key}>
               <span>{field.label}</span>
-              {field.kind === 'select' ? (
+              {field.kind === 'datasource' ? (
+                // Options come from the flow, plus whatever the block already
+                // holds so a value from an imported flow is never silently lost.
+                <select
+                  className={className}
+                  value={value}
+                  onChange={(event) =>
+                    updateProps(selected.id, { [field.key]: event.target.value })
+                  }
+                >
+                  <option value="">Select a datasource…</option>
+                  {[...new Set([...flow.datasources, value])]
+                    .filter(Boolean)
+                    .map((option) => (
+                      <option value={option} key={option}>
+                        {option}
+                      </option>
+                    ))}
+                </select>
+              ) : field.kind === 'select' ? (
                 <select
                   className={className}
                   value={value}

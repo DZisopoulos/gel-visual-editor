@@ -18,12 +18,11 @@ function sampleFlow() {
 }
 
 describe('generateGel', () => {
-  it('generates the full document', () => {
+  it('generates the full document for a process step', () => {
     expect(generateGel(sampleFlow())).toBe(
 `<gel:script xmlns:core="jelly:core"
             xmlns:gel="jelly:com.niku.union.gel.GELTagLibrary"
             xmlns:sql="jelly:sql">
-  <gel:parameter var="projectId" default=""/>
   <!-- Step: Get rows -->
   <gel:setDataSource dbId="Niku"/>
   <sql:query escapeText="false" var="rows">
@@ -34,6 +33,49 @@ describe('generateGel', () => {
   </core:forEach>
 </gel:script>
 `)
+  })
+
+  it('a standalone script declares its own datasources and parameters', () => {
+    const f = sampleFlow()
+    f.meta.scriptType = 'standalone'
+    f.datasources = ['Niku', 'Warehouse']
+    const out = generateGel(f)
+    expect(out).toContain(
+`<gel:script xmlns:core="jelly:core"
+            xmlns:gel="jelly:com.niku.union.gel.GELTagLibrary"
+            xmlns:sql="jelly:sql">
+  <gel:setDataSource dbId="Niku"/>
+  <gel:setDataSource dbId="Warehouse"/>
+  <gel:parameter var="projectId" default=""/>
+`)
+  })
+
+  it('a process step declares neither, leaving them to Clarity', () => {
+    const f = sampleFlow()
+    f.datasources = ['Niku', 'Warehouse']
+    const out = generateGel(f)
+    expect(out).not.toContain('<gel:parameter')
+    expect(out).not.toContain('dbId="Warehouse"')
+  })
+
+  it('emits the description as a header comment with -- sanitized', () => {
+    const f = sampleFlow()
+    f.meta.description = 'Nightly sync -- see ticket 42\nOwned by Platform'
+    const out = generateGel(f)
+    expect(out.startsWith('<!-- Nightly sync - - see ticket 42 -->\n<!-- Owned by Platform -->\n<gel:script')).toBe(true)
+  })
+
+  it('omits the header comment when there is no description', () => {
+    expect(generateGel(sampleFlow()).startsWith('<gel:script')).toBe(true)
+  })
+
+  it('does not declare the core namespace just because parameters exist', () => {
+    const f = createEmptyFlow('Params only')
+    f.meta.scriptType = 'standalone'
+    f.parameters = [{ name: 'projectId', type: 'string', default: '' }]
+    const out = generateGel(f)
+    expect(out).toContain('<gel:parameter var="projectId"')
+    expect(out).not.toContain('xmlns:core')
   })
   it('omits unused namespaces', () => {
     const f = createEmptyFlow('X')

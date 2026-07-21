@@ -890,6 +890,24 @@ button:disabled {
   padding: 0;
 }
 
+.gve-datasource-row {
+  display: grid;
+  grid-template-columns: 1fr 30px;
+  gap: 5px;
+  align-items: center;
+}
+
+.gve-datasource-row button {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+}
+
+.gve-field-hint {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
 .gve-xmlpane {
   display: flex;
   flex-direction: column;

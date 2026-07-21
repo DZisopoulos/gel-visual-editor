@@ -18,6 +18,7 @@ export interface GveState {
   updateProps(id: string, patch: Record<string, string>): void
   updateMeta(patch: Partial<FlowMeta>): void
   updateParameters(params: FlowParameter[], coalesceKey?: string): void
+  updateDatasources(datasources: string[], coalesceKey?: string): void
   move(id: string, target: DropTarget): void
   remove(id: string): void
   toggleEnabled(id: string): void
@@ -93,6 +94,8 @@ export const useGve = create<GveState>((set) => ({
   })),
   updateParameters: (parameters, coalesceKey) =>
     set(s => ({ ...snap(s, coalesceKey), flow: { ...s.flow, parameters } })),
+  updateDatasources: (datasources, coalesceKey) =>
+    set(s => ({ ...snap(s, coalesceKey), flow: { ...s.flow, datasources } })),
   move: (id, target) => set(s => {
     const blocks = moveBlock(s.flow.blocks, id, target)
     return blocks === s.flow.blocks ? s : { ...snap(s), flow: { ...s.flow, blocks } }

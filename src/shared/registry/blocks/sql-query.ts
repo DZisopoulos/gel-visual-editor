@@ -5,7 +5,7 @@ export const sqlQuery: NodeDefinition = {
   type: 'sql-query', name: 'SQL Query', category: 'data', color: '#60A5FA',
   namespaces: ['gel', 'sql'],
   fields: [
-    { key: 'datasource', label: 'Datasource', kind: 'text', required: true, placeholder: 'Niku' },
+    { key: 'datasource', label: 'Datasource', kind: 'datasource', required: true, placeholder: 'Niku' },
     { key: 'sql', label: 'SQL', kind: 'sql', required: true },
     { key: 'escapeText', label: 'Escape text', kind: 'select', options: ['false', 'true'] },
     { key: 'resultVar', label: 'Result variable', kind: 'text', required: true, placeholder: 'rows' }

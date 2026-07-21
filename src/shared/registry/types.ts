@@ -1,6 +1,6 @@
 import type { Block } from '../flow'
 
-export type FieldKind = 'text' | 'textarea' | 'sql' | 'xml' | 'expression' | 'select'
+export type FieldKind = 'text' | 'textarea' | 'sql' | 'xml' | 'expression' | 'select' | 'datasource'
 export interface FieldDef { key: string; label: string; kind: FieldKind; required?: boolean; options?: string[]; placeholder?: string }
 export type RenderChildren = (blocks: Block[]) => string[]
 export interface NodeDefinition {

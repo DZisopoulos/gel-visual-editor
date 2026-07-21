@@ -38,15 +38,25 @@ function renderBlocks(blocks: Block[]): string[] {
 }
 
 export function generateGel(flow: Flow): string {
+  // gel:parameter is gel-namespaced, so parameters need no extra declaration.
   const ns = new Set<string>(['gel'])
-  if (flow.parameters.length > 0) ns.add('core')
   collectNamespaces(flow.blocks, ns)
   const sorted = [...ns].sort()
   const head = sorted
     .map((n, i) => `${i === 0 ? '<gel:script ' : '            '}xmlns:${n}="${NS_URI[n]}"`)
-  const lines = [...head.slice(0, -1), head[head.length - 1] + '>']
-  for (const p of flow.parameters)
-    lines.push(`  <gel:parameter var="${escapeAttr(p.name)}" default="${escapeAttr(p.default)}"/>`)
+  const lines: string[] = []
+  const description = flow.meta.description.trim()
+  if (description)
+    lines.push(...description.split('\n').map(l => `<!-- ${l.replace(/--/g, '- -')} -->`))
+  lines.push(...head.slice(0, -1), head[head.length - 1] + '>')
+  // A process step runs inside Clarity, which supplies the connection and
+  // injects parameter values. A standalone script has to declare both itself.
+  if (flow.meta.scriptType === 'standalone') {
+    for (const datasource of flow.datasources)
+      if (datasource.trim()) lines.push(`  <gel:setDataSource dbId="${escapeAttr(datasource)}"/>`)
+    for (const p of flow.parameters)
+      lines.push(`  <gel:parameter var="${escapeAttr(p.name)}" default="${escapeAttr(p.default)}"/>`)
+  }
   lines.push(...renderBlocks(flow.blocks).map(l => '  ' + l))
   lines.push('</gel:script>')
   return lines.join('\n') + '\n'
