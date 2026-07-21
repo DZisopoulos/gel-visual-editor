@@ -349,6 +349,8 @@ button:disabled { color: var(--text-muted); opacity: 0.55; }
 }
 
 .gve-canvas {
+  flex: 1;
+  min-height: 0;
   overflow: hidden;
   background-color: var(--bg);
   background-image: radial-gradient(color-mix(in srgb, var(--border) 72%, transparent) 0.8px, transparent 0.8px);
@@ -357,6 +359,7 @@ button:disabled { color: var(--text-muted); opacity: 0.55; }
 
 .gve-canvas-scroll {
   height: 100%;
+  min-height: 100%;
   overflow: auto;
   padding: 28px clamp(24px, 5vw, 72px) 44px;
   background: transparent;
