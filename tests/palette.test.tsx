@@ -50,4 +50,17 @@ describe('palette', () => {
     fireEvent.click(core)
     expect(screen.getByText('Set Variable')).toBeTruthy()
   })
+
+  it('collapses and expands all categories', () => {
+    useGve.getState().loadFlow(createEmptyFlow('T'), null)
+    render(<Palette />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Collapse all' }))
+    expect(screen.queryByText('Set Variable')).toBeNull()
+    expect(screen.queryByText('SQL Query')).toBeNull()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Expand all' }))
+    expect(screen.getByText('Set Variable')).toBeTruthy()
+    expect(screen.getByText('SQL Query')).toBeTruthy()
+  })
 })

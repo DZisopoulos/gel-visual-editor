@@ -204,6 +204,21 @@ button:disabled { color: var(--text-muted); opacity: 0.55; }
 .gve-palette-search input::placeholder { color: var(--text-muted); }
 .gve-palette-search input:focus { border-color: var(--accent); }
 
+.gve-palette-search-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 7px;
+}
+
+.gve-palette-search-actions button {
+  flex: 1;
+  padding: 5px 6px;
+  color: var(--text-muted);
+  font-size: 10px;
+}
+
+.gve-palette-search-actions button:hover { color: var(--text); }
+
 .gve-palette-group + .gve-palette-group { margin-top: 14px; }
 
 .gve-palette-label {

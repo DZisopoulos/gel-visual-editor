@@ -15,6 +15,10 @@ function Palette(): React.JSX.Element {
   const [collapsed, setCollapsed] = useState<Partial<Record<NodeDefinition['category'], boolean>>>({})
   const normalizedQuery = query.trim().toLowerCase()
 
+  const setAllCollapsed = (value: boolean): void => {
+    setCollapsed(Object.fromEntries(categories.map(category => [category, value])))
+  }
+
   return (
     <aside className="gve-palette" aria-label="Block palette">
       <div className="gve-panel-title">Blocks</div>
@@ -26,6 +30,10 @@ function Palette(): React.JSX.Element {
           value={query}
           onChange={event => setQuery(event.target.value)}
         />
+        <div className="gve-palette-search-actions">
+          <button type="button" onClick={() => setAllCollapsed(true)}>Collapse all</button>
+          <button type="button" onClick={() => setAllCollapsed(false)}>Expand all</button>
+        </div>
       </div>
       <div className="gve-palette-groups">
         {categories.map(category => {
