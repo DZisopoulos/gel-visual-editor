@@ -4,6 +4,9 @@ import { readFile, rename, writeFile } from 'node:fs/promises'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 
+/** webContents ids whose renderer currently holds unsaved changes. */
+const unsavedContents = new Set<number>()
+
 function createWindow(): void {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
@@ -22,6 +25,31 @@ function createWindow(): void {
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()
+  })
+
+  // Guard every close path — the in-app titlebar button, Alt+F4 and app quit
+  // all funnel through here, unlike the renderer-side prompts on New and Open.
+  const contentsId = mainWindow.webContents.id
+  let confirmedClose = false
+  mainWindow.on('close', event => {
+    if (confirmedClose || !unsavedContents.has(contentsId)) return
+    event.preventDefault()
+    const choice = dialog.showMessageBoxSync(mainWindow, {
+      type: 'warning',
+      buttons: ['Discard changes', 'Cancel'],
+      defaultId: 1,
+      cancelId: 1,
+      title: 'Unsaved changes',
+      message: 'This flow has unsaved changes.',
+      detail: 'Closing now discards them. GVE keeps a recovery draft, but saving is safer.'
+    })
+    if (choice !== 0) return
+    confirmedClose = true
+    mainWindow.close()
+  })
+
+  mainWindow.on('closed', () => {
+    unsavedContents.delete(contentsId)
   })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
@@ -96,6 +124,11 @@ app.whenReady().then(() => {
     await atomicWrite(result.filePath, content)
     app.addRecentDocument(result.filePath)
     return result.filePath
+  })
+
+  ipcMain.on('gve:window:set-dirty', (event, dirty: boolean) => {
+    if (dirty) unsavedContents.add(event.sender.id)
+    else unsavedContents.delete(event.sender.id)
   })
 
   ipcMain.handle('gve:window:minimize', event => {

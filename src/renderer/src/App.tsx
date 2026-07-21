@@ -69,6 +69,10 @@ function App(): React.JSX.Element {
   useEffect(() => {
     localStorage.setItem(LAYOUT_KEY, JSON.stringify(layout))
   }, [layout])
+  // Mirror the dirty flag to the main process so it can guard window close.
+  useEffect(() => {
+    window.gve?.setDirty?.(dirty)
+  }, [dirty])
   useEffect(() => {
     const saved = localStorage.getItem(AUTOSAVE_KEY)
     if (!saved) return

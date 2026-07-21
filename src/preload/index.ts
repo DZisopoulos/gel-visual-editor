@@ -8,6 +8,9 @@ const gve = {
     ipcRenderer.invoke('gve:saveFlow', suggestedName, content, existingPath),
   exportXml: (suggestedName: string, content: string): Promise<string | null> =>
     ipcRenderer.invoke('gve:exportXml', suggestedName, content),
+  setDirty: (dirty: boolean): void => {
+    ipcRenderer.send('gve:window:set-dirty', dirty)
+  },
   window: {
     minimize: (): Promise<void> => ipcRenderer.invoke('gve:window:minimize'),
     toggleMaximize: (): Promise<boolean> => ipcRenderer.invoke('gve:window:toggle-maximize'),
