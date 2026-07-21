@@ -24,7 +24,9 @@ describe('app shell', () => {
       'false'
     )
     expect(document.querySelector('.gve-xmlpane')).toBeNull()
-    expect(screen.getByDisplayValue(/Untitled Flow|Test/)).toBeTruthy()
+    expect((screen.getByLabelText('Flow name') as HTMLInputElement).value).toMatch(
+      /Untitled Flow|Test/
+    )
 
     fireEvent.click(screen.getByRole('tab', { name: 'XML Preview' }))
     expect(document.querySelector('.gve-canvas')).toBeNull()
