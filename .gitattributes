@@ -1,0 +1,9 @@
+# Normalise all text to LF in the repository and in the working tree.
+# Matches end_of_line = lf in .editorconfig, and keeps the GVE-FLOW marker in
+# exported .xml byte-identical across platforms (see src/shared/roundtrip.ts).
+* text=auto eol=lf
+
+# Binary assets — never normalise or diff as text.
+*.png binary
+*.ico binary
+*.icns binary
