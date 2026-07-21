@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { act, render, screen, fireEvent } from '@testing-library/react'
 import Inspector from '../src/renderer/src/components/Inspector'
 import { useGve } from '../src/renderer/src/store'
 import { createEmptyFlow } from '../src/shared/flow'
@@ -27,6 +27,19 @@ describe('inspector', () => {
 
     fireEvent.change(escapeText, { target: { value: 'true' } })
     expect(useGve.getState().flow.blocks[0].props.escapeText).toBe('true')
+  })
+
+  it('keeps the flow name in sync with the store while typing', () => {
+    render(<Inspector />)
+    const name = screen.getByLabelText('Flow settings name') as HTMLInputElement
+    expect(name.value).toBe('T')
+
+    fireEvent.change(name, { target: { value: 'Renamed' } })
+    expect(useGve.getState().flow.meta.name).toBe('Renamed')
+
+    // A rename from elsewhere (undo, file open, the header field) must show here.
+    act(() => { useGve.getState().loadFlow(createEmptyFlow('From disk'), null) })
+    expect((screen.getByLabelText('Flow settings name') as HTMLInputElement).value).toBe('From disk')
   })
 
   it('adds a flow parameter when nothing is selected', () => {

@@ -847,10 +847,6 @@ button:disabled {
   border-color: var(--accent);
 }
 
-.gve-content-editable {
-  min-height: 34px;
-}
-
 .gve-field .gve-field-missing {
   border-left: 3px solid var(--warn);
 }

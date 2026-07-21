@@ -46,16 +46,12 @@ function Inspector({
         <div className="gve-inspector-body">
           <label className="gve-field">
             <span>Name</span>
-            <div
-              className="gve-field-control gve-content-editable"
-              role="textbox"
+            <input
+              className="gve-field-control"
               aria-label="Flow settings name"
-              contentEditable
-              suppressContentEditableWarning
-              onBlur={(event) => updateMeta({ name: event.currentTarget.textContent ?? '' })}
-            >
-              {flow.meta.name}
-            </div>
+              value={flow.meta.name}
+              onChange={(event) => updateMeta({ name: event.target.value })}
+            />
           </label>
           <label className="gve-field">
             <span>Description</span>
