@@ -6,6 +6,9 @@ describe('app shell', () => {
   it('renders the shell with flow and XML preview tabs', () => {
     render(<App />)
     expect(document.querySelector('.gve-header')).toBeTruthy()
+    expect(document.querySelector('.gve-brand')).toBeNull()
+    expect(document.querySelector('.gve-titlebar-brand')).toBeTruthy()
+    expect(document.querySelector('.gve-footer')).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Minimize' })).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Maximize' })).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Close' })).toBeTruthy()

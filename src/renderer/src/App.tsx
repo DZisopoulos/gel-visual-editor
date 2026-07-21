@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import Canvas from './components/Canvas'
+import Footer from './components/Footer'
 import Header from './components/Header'
 import Inspector from './components/Inspector'
 import Palette from './components/Palette'
@@ -21,12 +22,7 @@ function App(): React.JSX.Element {
     <div className="gve-shell" data-app-theme={themePreferences.app} style={getTheme(themePreferences.app).appVars as React.CSSProperties}>
       <WindowTitleBar />
       <div className="gve-app" data-app-theme={themePreferences.app}>
-      <Header
-        appTheme={themePreferences.app}
-        xmlTheme={themePreferences.xml}
-        onAppThemeChange={value => updateTheme('app', value)}
-        onXmlThemeChange={value => updateTheme('xml', value)}
-      />
+      <Header />
       <Palette />
       <div className="gve-center">
         <div className="gve-center-content">
@@ -55,6 +51,12 @@ function App(): React.JSX.Element {
       </div>
       <Inspector />
       </div>
+      <Footer
+        appTheme={themePreferences.app}
+        xmlTheme={themePreferences.xml}
+        onAppThemeChange={value => updateTheme('app', value)}
+        onXmlThemeChange={value => updateTheme('xml', value)}
+      />
     </div>
   )
 }

@@ -116,7 +116,7 @@ button:disabled { color: var(--text-muted); opacity: 0.55; }
   grid-column: 1 / -1;
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: 0;
   padding: 0 16px;
   border-bottom: 1px solid var(--border);
   background: var(--panel);
@@ -133,9 +133,10 @@ button:disabled { color: var(--text-muted); opacity: 0.55; }
 .gve-brand-name { color: var(--text-muted); font-size: 12px; }
 
 .gve-flow-name {
-  min-width: 180px;
-  max-width: 360px;
+  min-width: 0;
+  max-width: none;
   flex: 1;
+  margin-right: 18px;
   border: 1px solid transparent;
   border-radius: 6px;
   outline: none;
@@ -154,9 +155,27 @@ button:disabled { color: var(--text-muted); opacity: 0.55; }
 .gve-header-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   margin-left: auto;
 }
+
+.gve-icon-button {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  place-items: center;
+  border-color: transparent;
+  background: transparent;
+}
+
+.gve-icon-button:hover { border-color: currentColor; background: var(--panel-2); }
+.gve-icon { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
+.gve-icon-undo,
+.gve-icon-redo { color: var(--text-muted); }
+.gve-icon-open { color: #60A5FA; }
+.gve-icon-save { color: var(--ok); }
+.gve-icon-export { color: var(--warn); }
 
 .gve-theme-picker {
   display: flex;
@@ -265,7 +284,7 @@ button:disabled { color: var(--text-muted); opacity: 0.55; }
   flex: 1;
   padding: 5px 6px;
   color: var(--text-muted);
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .gve-palette-search-actions button:hover { color: var(--text); }
@@ -325,6 +344,9 @@ button:disabled { color: var(--text-muted); opacity: 0.55; }
   height: 100%;
   overflow: auto;
   padding: 28px clamp(24px, 5vw, 72px) 44px;
+  background-color: var(--bg);
+  background-image: radial-gradient(color-mix(in srgb, var(--border) 72%, transparent) 0.8px, transparent 0.8px);
+  background-size: 18px 18px;
 }
 
 .gve-flow-cap {
@@ -344,8 +366,40 @@ button:disabled { color: var(--text-muted); opacity: 0.55; }
 .gve-flow-start {
   justify-content: space-between;
   padding: 7px 12px;
-  border-color: color-mix(in srgb, var(--accent) 38%, var(--border));
+  border-color: color-mix(in srgb, var(--ok) 58%, var(--border));
+  background: color-mix(in srgb, var(--ok) 12%, var(--panel-2));
+  color: var(--ok);
 }
+
+.gve-flow-end {
+  border-color: color-mix(in srgb, var(--warn) 58%, var(--border));
+  background: color-mix(in srgb, var(--warn) 12%, var(--panel-2));
+  color: var(--warn);
+}
+
+.gve-footer {
+  display: flex;
+  flex: 0 0 36px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 12px 0 16px;
+  border-top: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--text-muted);
+  font-size: 10px;
+}
+
+.gve-footer-meta,
+.gve-footer-themes {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.gve-footer-divider { width: 1px; height: 13px; background: var(--border); }
+.gve-footer .gve-theme-picker { font-size: 10px; }
+.gve-footer .gve-theme-picker select { min-width: 104px; padding: 4px 6px; }
 
 .gve-parameter-chips { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 5px; }
 

@@ -1,16 +1,21 @@
 import { useGve } from '../store'
 import { parseFlowFile, serializeFlow } from '../../../shared/fileio'
 import { exportXml } from '../../../shared/roundtrip'
-import { THEME_OPTIONS, type ThemeId } from '../theme'
 
-interface HeaderProps {
-  appTheme: ThemeId
-  xmlTheme: ThemeId
-  onAppThemeChange: (theme: ThemeId) => void
-  onXmlThemeChange: (theme: ThemeId) => void
+type IconName = 'undo' | 'redo' | 'open' | 'save' | 'export'
+
+function Icon({ name }: { name: IconName }): React.JSX.Element {
+  const paths: Record<IconName, React.JSX.Element> = {
+    undo: <><path d="M9 7 4 12l5 5" /><path d="M4 12h10a5 5 0 0 1 5 5" /></>,
+    redo: <><path d="m15 7 5 5-5 5" /><path d="M20 12H10a5 5 0 0 0-5 5" /></>,
+    open: <><path d="M3 7.5h6l2 2h10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><path d="M3 7.5V5a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v2.5" /></>,
+    save: <><path d="M5 3h12l3 3v15H4V3z" /><path d="M8 3v6h8V3M8 21v-7h8v7" /></>,
+    export: <><path d="M12 16V4m0 0 4 4m-4-4-4 4" /><path d="M5 13v7h14v-7" /></>
+  }
+  return <svg className="gve-icon" viewBox="0 0 24 24" aria-hidden="true">{paths[name]}</svg>
 }
 
-function Header({ appTheme, xmlTheme, onAppThemeChange, onXmlThemeChange }: HeaderProps): React.JSX.Element {
+function Header(): React.JSX.Element {
   const name = useGve(s => s.flow.meta.name)
   const past = useGve(s => s.past)
   const future = useGve(s => s.future)
@@ -63,10 +68,6 @@ function Header({ appTheme, xmlTheme, onAppThemeChange, onXmlThemeChange }: Head
 
   return (
     <header className="gve-header">
-      <div className="gve-brand" aria-label="GVE — GEL Visual Editor">
-        <span className="gve-mark">GVE</span>
-        <span className="gve-brand-name">GEL Visual Editor</span>
-      </div>
       <input
         className="gve-flow-name"
         aria-label="Flow name"
@@ -74,25 +75,12 @@ function Header({ appTheme, xmlTheme, onAppThemeChange, onXmlThemeChange }: Head
         onChange={event => updateMeta({ name: event.target.value })}
       />
       <div className="gve-header-actions">
-        <button type="button" onClick={undo} disabled={past.length === 0}>Undo</button>
-        <button type="button" onClick={redo} disabled={future.length === 0}>Redo</button>
+        <button type="button" className="gve-icon-button gve-icon-undo" aria-label="Undo" title="Undo" onClick={undo} disabled={past.length === 0}><Icon name="undo" /></button>
+        <button type="button" className="gve-icon-button gve-icon-redo" aria-label="Redo" title="Redo" onClick={redo} disabled={future.length === 0}><Icon name="redo" /></button>
         <span className="gve-header-divider" />
-        <label className="gve-theme-picker">
-          <span>App</span>
-          <select aria-label="App theme" value={appTheme} onChange={event => onAppThemeChange(event.target.value as ThemeId)}>
-            {THEME_OPTIONS.map(theme => <option value={theme.id} key={theme.id}>{theme.name}</option>)}
-          </select>
-        </label>
-        <label className="gve-theme-picker">
-          <span>XML</span>
-          <select aria-label="XML theme" value={xmlTheme} onChange={event => onXmlThemeChange(event.target.value as ThemeId)}>
-            {THEME_OPTIONS.map(theme => <option value={theme.id} key={theme.id}>{theme.name}</option>)}
-          </select>
-        </label>
-        <span className="gve-header-divider" />
-        <button type="button" onClick={handleSave}>Save Flow</button>
-        <button type="button" onClick={handleOpen}>Open</button>
-        <button type="button" onClick={handleExport}>Export GEL ▸</button>
+        <button type="button" className="gve-icon-button gve-icon-open" aria-label="Open flow" title="Open flow" onClick={handleOpen}><Icon name="open" /></button>
+        <button type="button" className="gve-icon-button gve-icon-save" aria-label="Save flow" title="Save flow" onClick={handleSave}><Icon name="save" /></button>
+        <button type="button" className="gve-icon-button gve-icon-export" aria-label="Export GEL" title="Export GEL" onClick={handleExport}><Icon name="export" /></button>
       </div>
     </header>
   )
