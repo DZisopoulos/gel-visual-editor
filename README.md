@@ -53,13 +53,43 @@ The workspace tabs switch the center panel between **Flow**, **XML Preview**, an
 GEL scripts are powerful, but hand-authoring nested XML makes small changes expensive and easy to get wrong. GVE gives each step a structured editor while preserving the generated script as a first-class artifact:
 
 ```mermaid
+%%{init: {
+  "theme": "base",
+  "themeVariables": {
+    "primaryColor": "#171c26",
+    "primaryTextColor": "#e7e9f0",
+    "primaryBorderColor": "#2a3140",
+    "lineColor": "#8a93a6",
+    "fontFamily": "Segoe UI, Roboto, sans-serif",
+    "fontSize": "15px"
+  }
+}}%%
 flowchart LR
-  A[Choose a block] --> B[Compose the flow]
-  B --> C[Edit properties in Inspector]
-  C --> D{Validate}
-  D -->|Fix issues| C
-  D -->|Ready| E[Preview generated XML]
-  E --> F[Export GEL]
+    A(["Choose a block"]) --> B(["Compose the flow"])
+    B --> C(["Edit properties<br/>in Inspector"])
+    C --> D{{"Validate"}}
+    D -->|Fix issues| C
+    D -->|Ready| E(["Preview generated XML"])
+    E --> F(["Export GEL"])
+
+    classDef author fill:#A78BFA,stroke:#7C3AED,color:#151726,stroke-width:2px,font-weight:600;
+    classDef inspect fill:#60A5FA,stroke:#2563EB,color:#0b1220,stroke-width:2px,font-weight:600;
+    classDef gate fill:#F5B84D,stroke:#B45309,color:#241a06,stroke-width:2px,font-weight:600;
+    classDef preview fill:#2DD4BF,stroke:#0F766E,color:#04201c,stroke-width:2px,font-weight:600;
+    classDef done fill:#4ADE80,stroke:#16A34A,color:#052e14,stroke-width:2px,font-weight:600;
+
+    class A,B author
+    class C inspect
+    class D gate
+    class E preview
+    class F done
+
+    linkStyle 0 stroke:#A78BFA,stroke-width:2.5px
+    linkStyle 1 stroke:#60A5FA,stroke-width:2.5px
+    linkStyle 2 stroke:#F5B84D,stroke-width:2.5px
+    linkStyle 3 stroke:#FB7185,stroke-width:2.5px,stroke-dasharray:5 4
+    linkStyle 4 stroke:#4ADE80,stroke-width:2.5px
+    linkStyle 5 stroke:#2DD4BF,stroke-width:2.5px
 ```
 
 The editable flow and exported XML are linked by a versioned `GVE-FLOW` marker. When an exported file is opened again, GVE can detect whether the XML body drifted from the embedded flow definition and warn you instead of silently losing structure.
