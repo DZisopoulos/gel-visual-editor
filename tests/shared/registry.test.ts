@@ -29,6 +29,11 @@ describe('registry', () => {
       '  SELECT 1 FROM dual WHERE 1 &lt; 2',
       '</sql:query>'])
   })
+
+  it('sql-query supports enabling text escaping', () => {
+    const blk = { ...createBlock('sql-query'), props: { stepName: '', datasource: 'Niku', escapeText: 'true', resultVar: 'rows', sql: 'SELECT 1' } }
+    expect(getNodeDef('sql-query').toGel(blk, () => [])[1]).toContain('escapeText="true"')
+  })
   it('for-each wraps rendered children indented', () => {
     const blk = { ...createBlock('for-each'), props: { stepName: '', items: '${rows.rows}', varName: 'row' } }
     const lines = getNodeDef('for-each').toGel(blk, () => ['<gel:log level="INFO">hi</gel:log>'])
