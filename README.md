@@ -174,6 +174,8 @@ Press `Ctrl/Cmd + K` to search commands and add any registered block without lea
 
 The release is an early alpha. Windows SmartScreen may show a warning for an unsigned binary; verify that the file came from the official repository release page before continuing.
 
+Windows is the only platform with published builds. GVE is a standard Electron app and runs from source on macOS and Linux, but no packaged downloads are produced for them.
+
 Optional SHA-256 verification in PowerShell:
 
 ```powershell
