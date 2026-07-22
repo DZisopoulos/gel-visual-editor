@@ -32,9 +32,10 @@ import {
   usePanelResize,
   type LayoutPreferences
 } from './hooks/usePanelResize'
+import { VIEWS, type ViewId } from './views'
 
 function AppContent(): React.JSX.Element {
-  const [activeView, setActiveView] = useState<'flow' | 'xml' | 'validate'>('flow')
+  const [activeView, setActiveView] = useState<ViewId>('flow')
   const [themePreferences, setThemePreferences] = useState<ThemePreferences>(loadThemePreferences)
   const [layout, setLayout] = useState<LayoutPreferences>(loadLayoutPreferences)
   const [commandOpen, setCommandOpen] = useState(false)
@@ -148,16 +149,16 @@ function AppContent(): React.JSX.Element {
             </ErrorBoundary>
           </div>
           <div className="gve-view-tabs" role="tablist" aria-label="Workspace view">
-            {(['flow', 'xml', 'validate'] as const).map((view) => (
+            {VIEWS.map(({ id, label }) => (
               <button
                 type="button"
                 role="tab"
-                key={view}
-                aria-selected={activeView === view}
-                className={`gve-view-tab${activeView === view ? ' gve-view-tab-active' : ''}`}
-                onClick={() => setActiveView(view)}
+                key={id}
+                aria-selected={activeView === id}
+                className={`gve-view-tab${activeView === id ? ' gve-view-tab-active' : ''}`}
+                onClick={() => setActiveView(id)}
               >
-                {view === 'flow' ? 'Flow' : view === 'xml' ? 'XML Preview' : 'Validate'}
+                {label}
               </button>
             ))}
           </div>
