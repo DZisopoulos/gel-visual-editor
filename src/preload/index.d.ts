@@ -1,5 +1,3 @@
-import { ElectronAPI } from '@electron-toolkit/preload'
-
 export interface GveBridge {
   openFlow(): Promise<{ filePath: string; content: string } | null>
   saveFlow(
@@ -21,7 +19,6 @@ export interface GveBridge {
 
 declare global {
   interface Window {
-    electron: ElectronAPI
     gve: GveBridge
   }
 }
