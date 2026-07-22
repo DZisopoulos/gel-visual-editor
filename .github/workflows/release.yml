@@ -48,6 +48,9 @@ jobs:
     needs: verify
     runs-on: ${{ matrix.os }}
 
+    # Windows only for now. The Linux AppImage build failed on its first run
+    # and is not needed yet; re-add an ubuntu-latest entry here to bring it
+    # back (electron-builder.yml still carries the AppImage target).
     strategy:
       fail-fast: false
       matrix:
@@ -57,11 +60,6 @@ jobs:
             platform: win
             artifact: gve-windows
             files: dist/*portable.exe
-          - os: ubuntu-latest
-            label: Linux AppImage
-            platform: linux
-            artifact: gve-linux
-            files: dist/*.AppImage
 
     steps:
       - uses: actions/checkout@v7
