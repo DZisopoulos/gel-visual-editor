@@ -1,49 +1,59 @@
+import { useMemo } from 'react'
 import { useGve } from '../store'
 import { parseFlowFile, serializeFlow } from '../../../shared/fileio'
 import { exportXml } from '../../../shared/roundtrip'
 import { validateFlow } from '../../../shared/validate'
+import type { Block } from '../../../shared/flow'
 import { useDialog } from './DialogProvider'
 import { useToast } from './Toast'
 
 type IconName = 'undo' | 'redo' | 'open' | 'save' | 'export'
 
+const ICON_PATHS: Record<IconName, React.JSX.Element> = {
+  undo: (
+    <>
+      <path d="M9 7 4 12l5 5" />
+      <path d="M4 12h10a5 5 0 0 1 5 5" />
+    </>
+  ),
+  redo: (
+    <>
+      <path d="m15 7 5 5-5 5" />
+      <path d="M20 12H10a5 5 0 0 0-5 5" />
+    </>
+  ),
+  open: (
+    <>
+      <path d="M3 7.5h6l2 2h10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+      <path d="M3 7.5V5a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v2.5" />
+    </>
+  ),
+  save: (
+    <>
+      <path d="M5 3h12l3 3v15H4V3z" />
+      <path d="M8 3v6h8V3M8 21v-7h8v7" />
+    </>
+  ),
+  export: (
+    <>
+      <path d="M12 16V4m0 0 4 4m-4-4-4 4" />
+      <path d="M5 13v7h14v-7" />
+    </>
+  )
+}
+
 function Icon({ name }: { name: IconName }): React.JSX.Element {
-  const paths: Record<IconName, React.JSX.Element> = {
-    undo: (
-      <>
-        <path d="M9 7 4 12l5 5" />
-        <path d="M4 12h10a5 5 0 0 1 5 5" />
-      </>
-    ),
-    redo: (
-      <>
-        <path d="m15 7 5 5-5 5" />
-        <path d="M20 12H10a5 5 0 0 0-5 5" />
-      </>
-    ),
-    open: (
-      <>
-        <path d="M3 7.5h6l2 2h10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-        <path d="M3 7.5V5a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v2.5" />
-      </>
-    ),
-    save: (
-      <>
-        <path d="M5 3h12l3 3v15H4V3z" />
-        <path d="M8 3v6h8V3M8 21v-7h8v7" />
-      </>
-    ),
-    export: (
-      <>
-        <path d="M12 16V4m0 0 4 4m-4-4-4 4" />
-        <path d="M5 13v7h14v-7" />
-      </>
-    )
-  }
   return (
     <svg className="gve-icon" viewBox="0 0 24 24" aria-hidden="true">
-      {paths[name]}
+      {ICON_PATHS[name]}
     </svg>
+  )
+}
+
+function countBlocks(blocks: Block[]): number {
+  return blocks.reduce(
+    (count, block) => count + 1 + (block.children ? countBlocks(block.children) : 0),
+    0
   )
 }
 
@@ -62,12 +72,7 @@ function Header(): React.JSX.Element {
   const { confirm, alert } = useDialog()
   const { push } = useToast()
 
-  const countBlocks = (blocks: typeof flow.blocks): number =>
-    blocks.reduce(
-      (count, block) => count + 1 + (block.children ? countBlocks(block.children) : 0),
-      0
-    )
-  const validation = validateFlow(flow)
+  const validation = useMemo(() => validateFlow(flow), [flow])
   const errorCount = validation.filter((issue) => issue.severity === 'error').length
   const warningCount = validation.filter((issue) => issue.severity === 'warning').length
 
@@ -126,9 +131,11 @@ function Header(): React.JSX.Element {
   }
 
   const handleExport = async (): Promise<void> => {
-    const issues = validateFlow(flow)
-    const errors = issues.filter((issue) => issue.severity === 'error')
-    const warnings = issues.filter((issue) => issue.severity === 'warning')
+    // Reuses the memoized `validation` above: handleExport is invoked synchronously
+    // from this render's closure, so `flow` (and thus `validation`) can't have
+    // changed between render and click.
+    const errors = validation.filter((issue) => issue.severity === 'error')
+    const warnings = validation.filter((issue) => issue.severity === 'warning')
     if (errors.length > 0) {
       await alert(
         'Export blocked',
