@@ -1,5 +1,12 @@
 import { useEffect, useState } from 'react'
 
+const minimize = (): void => {
+  void window.gve?.window.minimize()
+}
+const close = (): void => {
+  void window.gve?.window.close()
+}
+
 function WindowTitleBar(): React.JSX.Element {
   const [maximized, setMaximized] = useState(false)
 
@@ -9,16 +16,10 @@ function WindowTitleBar(): React.JSX.Element {
     void controls.isMaximized().then(setMaximized)
   }, [])
 
-  const minimize = (): void => {
-    void window.gve?.window.minimize()
-  }
   const toggleMaximize = (): void => {
     const controls = window.gve?.window
     if (!controls) return
     void controls.toggleMaximize().then(setMaximized)
-  }
-  const close = (): void => {
-    void window.gve?.window.close()
   }
 
   return (
