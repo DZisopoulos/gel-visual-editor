@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { memo, type ReactNode } from 'react'
 import type { Block } from '../../../shared/flow'
 import { getNodeDef } from '../../../shared/registry'
 import { useGve } from '../store'
@@ -19,6 +19,7 @@ function BlockCard({ block, children }: BlockCardProps): React.JSX.Element {
   const remove = useGve((s) => s.remove)
   const toggleEnabled = useGve((s) => s.toggleEnabled)
   const duplicate = useGve((s) => s.duplicate)
+  const moveBy = useGve((s) => s.moveBy)
   const summaryField = def.fields.find((field) => block.props[field.key])
   const summary = summaryField ? block.props[summaryField.key] : ''
   const { prompt } = useDialog()
@@ -34,42 +35,64 @@ function BlockCard({ block, children }: BlockCardProps): React.JSX.Element {
   return (
     <article
       className={`gve-block${selected ? ' gve-block-selected' : ''}${block.enabled ? '' : ' gve-block-disabled'}`}
-      role="button"
-      tabIndex={0}
-      draggable
-      onClick={(event) => {
-        event.stopPropagation()
-        select(block.id)
-      }}
-      onKeyDown={(event) => {
-        if (event.key === 'Enter' || event.key === ' ') {
-          event.preventDefault()
-          event.stopPropagation()
-          select(block.id)
-        }
-      }}
-      onDragStart={(event) => {
-        event.stopPropagation()
-        event.dataTransfer.setData('application/x-gve-move-block', block.id)
-        event.dataTransfer.effectAllowed = 'move'
-        setBlockDragPreview(event, def.name, def.color)
-      }}
       style={{ '--block-color': def.color } as React.CSSProperties}
     >
       <div className="gve-block-head">
-        <span className="gve-block-icon" aria-hidden="true">
-          <BlockIcon type={block.type} definition={def} />
-        </span>
-        <div className="gve-block-title">
-          <span className="gve-block-type">{def.name}</span>
-          <span className={`gve-block-name${block.props.stepName ? '' : ' gve-block-name-muted'}`}>
-            {block.props.stepName || 'Unnamed step'}
+        <button
+          type="button"
+          className="gve-block-select"
+          aria-pressed={selected}
+          aria-label={`Select ${def.name}${block.props.stepName ? `: ${block.props.stepName}` : ''}`}
+          draggable
+          onClick={(event) => {
+            event.stopPropagation()
+            select(block.id)
+          }}
+          onDragStart={(event) => {
+            event.stopPropagation()
+            event.dataTransfer.setData('application/x-gve-move-block', block.id)
+            event.dataTransfer.effectAllowed = 'move'
+            setBlockDragPreview(event, def.name, def.color)
+          }}
+        >
+          <span className="gve-block-icon" aria-hidden="true">
+            <BlockIcon type={block.type} definition={def} />
           </span>
-        </div>
+          <span className="gve-block-title">
+            <span className="gve-block-type">{def.name}</span>
+            <span
+              className={`gve-block-name${block.props.stepName ? '' : ' gve-block-name-muted'}`}
+            >
+              {block.props.stepName || 'Unnamed step'}
+            </span>
+          </span>
+        </button>
         <span className="gve-block-grip" aria-hidden="true">
           ⠿
         </span>
         <div className="gve-block-actions">
+          <button
+            type="button"
+            aria-label={`Move ${def.name} up`}
+            title="Move up"
+            onClick={(event) => {
+              event.stopPropagation()
+              moveBy(block.id, -1)
+            }}
+          >
+            ↑
+          </button>
+          <button
+            type="button"
+            aria-label={`Move ${def.name} down`}
+            title="Move down"
+            onClick={(event) => {
+              event.stopPropagation()
+              moveBy(block.id, 1)
+            }}
+          >
+            ↓
+          </button>
           <button
             type="button"
             aria-label={`Duplicate ${def.name}`}
@@ -122,4 +145,4 @@ function BlockCard({ block, children }: BlockCardProps): React.JSX.Element {
   )
 }
 
-export default BlockCard
+export default memo(BlockCard)

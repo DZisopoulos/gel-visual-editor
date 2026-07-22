@@ -1,4 +1,5 @@
-import type { Block, Flow, FlowMeta, FlowParameter } from './flow'
+import type { Block, Flow, FlowDatasource, FlowMeta, FlowParameter } from './flow'
+import { newId } from './flow'
 import { getNodeDef } from './registry'
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -54,6 +55,9 @@ export function parseFlowDocument(value: unknown): Flow {
     (meta.scriptType !== 'process-step' && meta.scriptType !== 'standalone')
   )
     throw new Error('Flow metadata is invalid.')
+  // `id` was added to parameters and datasources after 1.0 shipped. Older
+  // saved/exported documents won't have it — backfill a fresh id at parse
+  // time so those files keep loading instead of failing validation.
   const parameters: FlowParameter[] = value.parameters.map((parameter) => {
     if (
       !isRecord(parameter) ||
@@ -63,18 +67,27 @@ export function parseFlowDocument(value: unknown): Flow {
     )
       throw new Error('A flow parameter is invalid.')
     return {
+      id: typeof parameter.id === 'string' ? parameter.id : newId(),
       name: parameter.name,
       type: parameter.type as FlowParameter['type'],
       default: parameter.default
     }
   })
-  if (value.datasources.some((datasource) => typeof datasource !== 'string'))
+  const datasources: FlowDatasource[] = value.datasources.map((datasource) => {
+    // Pre-migration documents store datasources as plain strings.
+    if (typeof datasource === 'string') return { id: newId(), value: datasource }
+    if (isRecord(datasource) && typeof datasource.value === 'string')
+      return {
+        id: typeof datasource.id === 'string' ? datasource.id : newId(),
+        value: datasource.value
+      }
     throw new Error('Flow datasources are invalid.')
+  })
   return {
     gveVersion: '1.0',
     meta: { name: meta.name, description: meta.description, scriptType: meta.scriptType },
     parameters,
-    datasources: value.datasources as string[],
+    datasources,
     blocks: value.blocks.map(parseBlock)
   }
 }

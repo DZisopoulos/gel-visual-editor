@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { Block, Flow, FlowMeta, FlowParameter } from '../../shared/flow'
+import type { Block, Flow, FlowDatasource, FlowMeta, FlowParameter } from '../../shared/flow'
 import { createEmptyFlow, newId } from '../../shared/flow'
 import { insertBlock, moveBlock, removeBlock, findBlock, type DropTarget } from '../../shared/tree'
 import { createBlock } from '../../shared/registry'
@@ -27,8 +27,9 @@ export interface GveState {
   updateProps(id: string, patch: Record<string, string>): void
   updateMeta(patch: Partial<FlowMeta>): void
   updateParameters(params: FlowParameter[], coalesceKey?: string): void
-  updateDatasources(datasources: string[], coalesceKey?: string): void
+  updateDatasources(datasources: FlowDatasource[], coalesceKey?: string): void
   move(id: string, target: DropTarget): void
+  moveBy(id: string, direction: -1 | 1): void
   remove(id: string): void
   toggleEnabled(id: string): void
   duplicate(id: string): void
@@ -133,14 +134,22 @@ export const useGve = create<GveState>((set) => ({
   updateProps: (id, patch) =>
     set((s) => {
       let found = false
-      const walk = (bs: typeof s.flow.blocks): typeof s.flow.blocks =>
-        bs.map((b) => {
+      const walk = (bs: typeof s.flow.blocks): typeof s.flow.blocks => {
+        let changed = false
+        const next = bs.map((b) => {
           if (b.id === id) {
             found = true
+            changed = true
             return { ...b, props: { ...b.props, ...patch } }
           }
-          return b.children ? { ...b, children: walk(b.children) } : b
+          if (!b.children) return b
+          const children = walk(b.children)
+          if (children === b.children) return b
+          changed = true
+          return { ...b, children }
         })
+        return changed ? next : bs
+      }
       const blocks = walk(s.flow.blocks)
       const key = `props:${id}:${Object.keys(patch).sort().join(',')}`
       return found ? { ...snap(s, key), flow: { ...s.flow, blocks } } : s
@@ -159,6 +168,32 @@ export const useGve = create<GveState>((set) => ({
       const blocks = moveBlock(s.flow.blocks, id, target)
       return blocks === s.flow.blocks ? s : { ...snap(s), flow: { ...s.flow, blocks } }
     }),
+  moveBy: (id, direction) =>
+    set((s) => {
+      const swapInList = (blocks: Block[]): Block[] | null => {
+        const index = blocks.findIndex((b) => b.id === id)
+        if (index === -1) {
+          for (let i = 0; i < blocks.length; i += 1) {
+            const child = blocks[i]
+            if (!child.children) continue
+            const nested = swapInList(child.children)
+            if (nested) {
+              const next = [...blocks]
+              next[i] = { ...child, children: nested }
+              return next
+            }
+          }
+          return null
+        }
+        const target = index + direction
+        if (target < 0 || target >= blocks.length) return blocks
+        const next = [...blocks]
+        ;[next[index], next[target]] = [next[target], next[index]]
+        return next
+      }
+      const blocks = swapInList(s.flow.blocks)
+      return blocks && blocks !== s.flow.blocks ? { ...snap(s), flow: { ...s.flow, blocks } } : s
+    }),
   remove: (id) =>
     set((s) => {
       const { blocks, removed } = removeBlock(s.flow.blocks, id)
@@ -175,14 +210,22 @@ export const useGve = create<GveState>((set) => ({
   toggleEnabled: (id) =>
     set((s) => {
       let found = false
-      const walk = (bs: typeof s.flow.blocks): typeof s.flow.blocks =>
-        bs.map((b) => {
+      const walk = (bs: typeof s.flow.blocks): typeof s.flow.blocks => {
+        let changed = false
+        const next = bs.map((b) => {
           if (b.id === id) {
             found = true
+            changed = true
             return { ...b, enabled: !b.enabled }
           }
-          return b.children ? { ...b, children: walk(b.children) } : b
+          if (!b.children) return b
+          const children = walk(b.children)
+          if (children === b.children) return b
+          changed = true
+          return { ...b, children }
         })
+        return changed ? next : bs
+      }
       const blocks = walk(s.flow.blocks)
       return found ? { ...snap(s), flow: { ...s.flow, blocks } } : s
     }),

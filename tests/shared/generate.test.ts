@@ -5,7 +5,7 @@ import { generateGel } from '../../src/shared/generate'
 
 function sampleFlow(): Flow {
   const f = createEmptyFlow('Sample')
-  f.parameters = [{ name: 'projectId', type: 'string', default: '' }]
+  f.parameters = [{ id: 'p1', name: 'projectId', type: 'string', default: '' }]
   const q = createBlock('sql-query')
   q.props = {
     stepName: 'Get rows',
@@ -44,7 +44,10 @@ describe('generateGel', () => {
   it('a standalone script declares its own datasources and parameters', () => {
     const f = sampleFlow()
     f.meta.scriptType = 'standalone'
-    f.datasources = ['Niku', 'Warehouse']
+    f.datasources = [
+      { id: 'd1', value: 'Niku' },
+      { id: 'd2', value: 'Warehouse' }
+    ]
     const out = generateGel(f)
     expect(out).toContain(
       `<gel:script xmlns:core="jelly:core"
@@ -59,7 +62,10 @@ describe('generateGel', () => {
 
   it('a process step declares neither, leaving them to Clarity', () => {
     const f = sampleFlow()
-    f.datasources = ['Niku', 'Warehouse']
+    f.datasources = [
+      { id: 'd1', value: 'Niku' },
+      { id: 'd2', value: 'Warehouse' }
+    ]
     const out = generateGel(f)
     expect(out).not.toContain('<gel:parameter')
     expect(out).not.toContain('dbId="Warehouse"')
@@ -83,7 +89,7 @@ describe('generateGel', () => {
   it('does not declare the core namespace just because parameters exist', () => {
     const f = createEmptyFlow('Params only')
     f.meta.scriptType = 'standalone'
-    f.parameters = [{ name: 'projectId', type: 'string', default: '' }]
+    f.parameters = [{ id: 'p1', name: 'projectId', type: 'string', default: '' }]
     const out = generateGel(f)
     expect(out).toContain('<gel:parameter var="projectId"')
     expect(out).not.toContain('xmlns:core')

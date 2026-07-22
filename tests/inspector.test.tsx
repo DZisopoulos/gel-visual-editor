@@ -53,7 +53,10 @@ describe('inspector', () => {
 
   it('offers the flow datasources as options on a SQL Query block', () => {
     act(() => {
-      useGve.getState().updateDatasources(['Niku', 'Warehouse'])
+      useGve.getState().updateDatasources([
+        { id: 'd1', value: 'Niku' },
+        { id: 'd2', value: 'Warehouse' }
+      ])
     })
     useGve.getState().addBlock('sql-query', { parentId: null, index: 0 })
     render(<Inspector />)
@@ -85,13 +88,13 @@ describe('inspector', () => {
   it('edits the flow datasource list', () => {
     render(<Inspector />)
     fireEvent.click(screen.getByRole('button', { name: 'Add datasource' }))
-    expect(useGve.getState().flow.datasources).toEqual(['Niku', ''])
+    expect(useGve.getState().flow.datasources.map((d) => d.value)).toEqual(['Niku', ''])
 
     fireEvent.change(screen.getByLabelText('Datasource 2'), { target: { value: 'Warehouse' } })
-    expect(useGve.getState().flow.datasources).toEqual(['Niku', 'Warehouse'])
+    expect(useGve.getState().flow.datasources.map((d) => d.value)).toEqual(['Niku', 'Warehouse'])
 
     fireEvent.click(screen.getByRole('button', { name: 'Remove datasource 1' }))
-    expect(useGve.getState().flow.datasources).toEqual(['Warehouse'])
+    expect(useGve.getState().flow.datasources.map((d) => d.value)).toEqual(['Warehouse'])
   })
 
   it('adds a flow parameter when nothing is selected', () => {
