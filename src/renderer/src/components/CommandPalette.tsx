@@ -24,6 +24,7 @@ function CommandPaletteBody({ onClose }: Omit<CommandPaletteProps, 'open'>): Rea
   const [query, setQuery] = useState('')
   const [activeIndex, setActiveIndex] = useState(0)
   const inputRef = useRef<HTMLInputElement>(null)
+  const dialogRef = useRef<HTMLDialogElement>(null)
   const flow = useGve((s) => s.flow)
   const addBlock = useGve((s) => s.addBlock)
   const undo = useGve((s) => s.undo)
@@ -32,6 +33,7 @@ function CommandPaletteBody({ onClose }: Omit<CommandPaletteProps, 'open'>): Rea
   const futureLength = useGve((s) => s.future.length)
 
   useEffect(() => {
+    dialogRef.current?.showModal()
     window.setTimeout(() => inputRef.current?.focus(), 0)
   }, [])
 
@@ -66,77 +68,75 @@ function CommandPaletteBody({ onClose }: Omit<CommandPaletteProps, 'open'>): Rea
   }
 
   return (
-    <div
-      className="gve-modal-backdrop gve-command-backdrop"
-      role="presentation"
-      onMouseDown={(event) => {
-        if (event.target === event.currentTarget) onClose()
+    <dialog
+      ref={dialogRef}
+      className="gve-command-palette"
+      aria-label="Command palette"
+      onCancel={(event) => {
+        event.preventDefault()
+        onClose()
+      }}
+      onClick={(event) => {
+        if (event.target === dialogRef.current) onClose()
       }}
     >
-      <section
-        className="gve-command-palette"
-        role="dialog"
-        aria-modal="true"
-        aria-label="Command palette"
-      >
-        <div className="gve-command-search">
-          <span className="gve-command-search-icon" aria-hidden="true">
-            ⌕
-          </span>
-          <input
-            ref={inputRef}
-            aria-label="Search commands"
-            placeholder="Search commands or blocks..."
-            value={query}
-            onChange={(event) => {
-              setQuery(event.target.value)
-              setActiveIndex(0)
-            }}
-            onKeyDown={(event) => {
-              if (event.key === 'Escape') onClose()
-              if (event.key === 'ArrowDown') {
-                event.preventDefault()
-                setActiveIndex((index) => Math.min(index + 1, Math.max(0, items.length - 1)))
-              }
-              if (event.key === 'ArrowUp') {
-                event.preventDefault()
-                setActiveIndex((index) => Math.max(0, index - 1))
-              }
-              if (event.key === 'Enter') {
-                event.preventDefault()
-                choose(items[activeIndex])
-              }
-            }}
-          />
-          <kbd>ESC</kbd>
-        </div>
-        <div className="gve-command-list" role="listbox" aria-label="Commands">
-          {items.length === 0 ? (
-            <div className="gve-command-empty">No matching commands</div>
-          ) : (
-            items.map((item, index) => (
-              <button
-                type="button"
-                role="option"
-                aria-selected={index === activeIndex}
-                className={`gve-command-item${index === activeIndex ? ' gve-command-item-active' : ''}`}
-                key={item.id}
-                onMouseEnter={() => setActiveIndex(index)}
-                onClick={() => choose(item)}
-              >
-                <span>{item.label}</span>
-                <small>{item.detail}</small>
-              </button>
-            ))
-          )}
-        </div>
-        <div className="gve-command-footer">
-          <span>↑↓ Navigate</span>
-          <span>Enter Run</span>
-          <span>Esc Close</span>
-        </div>
-      </section>
-    </div>
+      <div className="gve-command-search">
+        <span className="gve-command-search-icon" aria-hidden="true">
+          ⌕
+        </span>
+        <input
+          ref={inputRef}
+          aria-label="Search commands"
+          placeholder="Search commands or blocks..."
+          value={query}
+          onChange={(event) => {
+            setQuery(event.target.value)
+            setActiveIndex(0)
+          }}
+          onKeyDown={(event) => {
+            // Escape is handled natively via the dialog's onCancel above.
+            if (event.key === 'ArrowDown') {
+              event.preventDefault()
+              setActiveIndex((index) => Math.min(index + 1, Math.max(0, items.length - 1)))
+            }
+            if (event.key === 'ArrowUp') {
+              event.preventDefault()
+              setActiveIndex((index) => Math.max(0, index - 1))
+            }
+            if (event.key === 'Enter') {
+              event.preventDefault()
+              choose(items[activeIndex])
+            }
+          }}
+        />
+        <kbd>ESC</kbd>
+      </div>
+      <div className="gve-command-list" role="listbox" aria-label="Commands">
+        {items.length === 0 ? (
+          <div className="gve-command-empty">No matching commands</div>
+        ) : (
+          items.map((item, index) => (
+            <button
+              type="button"
+              role="option"
+              aria-selected={index === activeIndex}
+              className={`gve-command-item${index === activeIndex ? ' gve-command-item-active' : ''}`}
+              key={item.id}
+              onMouseEnter={() => setActiveIndex(index)}
+              onClick={() => choose(item)}
+            >
+              <span>{item.label}</span>
+              <small>{item.detail}</small>
+            </button>
+          ))
+        )}
+      </div>
+      <div className="gve-command-footer">
+        <span>↑↓ Navigate</span>
+        <span>Enter Run</span>
+        <span>Esc Close</span>
+      </div>
+    </dialog>
   )
 }
 
