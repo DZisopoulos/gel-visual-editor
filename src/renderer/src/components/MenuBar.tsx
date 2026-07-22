@@ -1,13 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
 import { createEmptyFlow } from '../../../shared/flow'
 import { useGve } from '../store'
+import { VIEWS, type ViewId } from '../views'
 import Header from './Header'
 import { useDialog } from './DialogProvider'
 
 type MenuId = 'file' | 'edit' | 'view' | 'help'
 interface MenuBarProps {
-  activeView: 'flow' | 'xml' | 'validate'
-  onViewChange: (view: 'flow' | 'xml' | 'validate') => void
+  activeView: ViewId
+  onViewChange: (view: ViewId) => void
   onOpenCommandPalette: () => void
   onAbout: () => void
   onResetLayout: () => void
@@ -144,12 +145,8 @@ function MenuBar({
                 )}
                 {menu === 'view' && (
                   <>
-                    {item('Flow canvas', () => onViewChange('flow'), activeView === 'flow')}
-                    {item('XML preview', () => onViewChange('xml'), activeView === 'xml')}
-                    {item(
-                      'Validate flow',
-                      () => onViewChange('validate'),
-                      activeView === 'validate'
+                    {VIEWS.map(({ id, menuLabel }) =>
+                      item(menuLabel, () => onViewChange(id), activeView === id)
                     )}
                     <div className="gve-menu-separator" />
                     {item(
