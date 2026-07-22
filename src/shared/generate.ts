@@ -55,7 +55,8 @@ export function generateGel(flow: Flow): string {
   // injects parameter values. A standalone script has to declare both itself.
   if (flow.meta.scriptType === 'standalone') {
     for (const datasource of flow.datasources)
-      if (datasource.trim()) lines.push(`  <gel:setDataSource dbId="${escapeAttr(datasource)}"/>`)
+      if (datasource.value.trim())
+        lines.push(`  <gel:setDataSource dbId="${escapeAttr(datasource.value)}"/>`)
     for (const p of flow.parameters)
       lines.push(
         `  <gel:parameter var="${escapeAttr(p.name)}" default="${escapeAttr(p.default)}"/>`

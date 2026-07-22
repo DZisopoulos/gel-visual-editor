@@ -1,4 +1,5 @@
 import type { FlowParameter } from '../../../shared/flow'
+import { newId } from '../../../shared/flow'
 import { getNodeDef } from '../../../shared/registry'
 import type { FieldDef } from '../../../shared/registry/types'
 import { findBlock } from '../../../shared/tree'
@@ -32,10 +33,12 @@ function Inspector({
   const updateDatasources = useGve((s) => s.updateDatasources)
   const selected = selectedId ? findBlock(flow.blocks, selectedId) : null
 
-  const updateParameter = (index: number, patch: Partial<FlowParameter>): void => {
+  const updateParameter = (id: string, patch: Partial<FlowParameter>): void => {
     updateParameters(
-      flow.parameters.map((parameter, i) => (i === index ? { ...parameter, ...patch } : parameter)),
-      `parameter:${index}:${Object.keys(patch).join(',')}`
+      flow.parameters.map((parameter) =>
+        parameter.id === id ? { ...parameter, ...patch } : parameter
+      ),
+      `parameter:${id}:${Object.keys(patch).join(',')}`
     )
   }
 
@@ -101,30 +104,37 @@ function Inspector({
 
           <div className="gve-parameters-head">
             <span>Datasources</span>
-            <button type="button" onClick={() => updateDatasources([...flow.datasources, ''])}>
+            <button
+              type="button"
+              onClick={() => updateDatasources([...flow.datasources, { id: newId(), value: '' }])}
+            >
               Add datasource
             </button>
           </div>
           <div className="gve-parameters">
             {flow.datasources.map((datasource, index) => (
-              <div className="gve-datasource-row" key={index}>
+              <div className="gve-datasource-row" key={datasource.id}>
                 <input
                   aria-label={`Datasource ${index + 1}`}
                   placeholder="Niku"
-                  value={datasource}
+                  value={datasource.value}
                   onChange={(event) =>
                     updateDatasources(
-                      flow.datasources.map((entry, i) =>
-                        i === index ? event.target.value : entry
+                      flow.datasources.map((entry) =>
+                        entry.id === datasource.id ? { ...entry, value: event.target.value } : entry
                       ),
-                      `datasource:${index}`
+                      `datasource:${datasource.id}`
                     )
                   }
                 />
                 <button
                   type="button"
                   aria-label={`Remove datasource ${index + 1}`}
-                  onClick={() => updateDatasources(flow.datasources.filter((_, i) => i !== index))}
+                  onClick={() =>
+                    updateDatasources(
+                      flow.datasources.filter((entry) => entry.id !== datasource.id)
+                    )
+                  }
                 >
                   ×
                 </button>
@@ -137,7 +147,10 @@ function Inspector({
             <button
               type="button"
               onClick={() =>
-                updateParameters([...flow.parameters, { name: '', type: 'string', default: '' }])
+                updateParameters([
+                  ...flow.parameters,
+                  { id: newId(), name: '', type: 'string', default: '' }
+                ])
               }
             >
               Add parameter
@@ -145,18 +158,20 @@ function Inspector({
           </div>
           <div className="gve-parameters">
             {flow.parameters.map((parameter, index) => (
-              <div className="gve-parameter-row" key={index}>
+              <div className="gve-parameter-row" key={parameter.id}>
                 <input
                   aria-label={`Parameter ${index + 1} name`}
                   placeholder="Name"
                   value={parameter.name}
-                  onChange={(event) => updateParameter(index, { name: event.target.value })}
+                  onChange={(event) => updateParameter(parameter.id, { name: event.target.value })}
                 />
                 <select
                   aria-label={`Parameter ${index + 1} type`}
                   value={parameter.type}
                   onChange={(event) =>
-                    updateParameter(index, { type: event.target.value as FlowParameter['type'] })
+                    updateParameter(parameter.id, {
+                      type: event.target.value as FlowParameter['type']
+                    })
                   }
                 >
                   <option value="string">String</option>
@@ -167,12 +182,16 @@ function Inspector({
                   aria-label={`Parameter ${index + 1} default`}
                   placeholder="Default"
                   value={parameter.default}
-                  onChange={(event) => updateParameter(index, { default: event.target.value })}
+                  onChange={(event) =>
+                    updateParameter(parameter.id, { default: event.target.value })
+                  }
                 />
                 <button
                   type="button"
                   aria-label={`Remove parameter ${index + 1}`}
-                  onClick={() => updateParameters(flow.parameters.filter((_, i) => i !== index))}
+                  onClick={() =>
+                    updateParameters(flow.parameters.filter((entry) => entry.id !== parameter.id))
+                  }
                 >
                   ×
                 </button>
@@ -246,11 +265,13 @@ function Inspector({
                   }
                 >
                   <option value="">Select a datasource…</option>
-                  {[...new Set([...flow.datasources, value])].filter(Boolean).map((option) => (
-                    <option value={option} key={option}>
-                      {option}
-                    </option>
-                  ))}
+                  {[...new Set([...flow.datasources.map((d) => d.value), value])]
+                    .filter(Boolean)
+                    .map((option) => (
+                      <option value={option} key={option}>
+                        {option}
+                      </option>
+                    ))}
                 </select>
               ) : field.kind === 'select' ? (
                 <select

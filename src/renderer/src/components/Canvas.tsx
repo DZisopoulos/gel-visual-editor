@@ -159,7 +159,7 @@ function Canvas(): React.JSX.Element {
             <span>START</span>
             <div className="gve-parameter-chips">
               {flow.parameters.map((parameter) => (
-                <span className="gve-parameter-chip" key={parameter.name}>
+                <span className="gve-parameter-chip" key={parameter.id}>
                   {parameter.name}
                 </span>
               ))}

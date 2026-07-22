@@ -84,7 +84,7 @@ describe('canvas', () => {
     expect(useGve.getState().selectedId).toBe(logId)
 
     const payload: Record<string, string> = {}
-    fireEvent.dragStart(label.closest('.gve-block')!, {
+    fireEvent.dragStart(label.closest('.gve-block-select')!, {
       dataTransfer: {
         setData: (type: string, value: string) => {
           payload[type] = value
@@ -94,14 +94,18 @@ describe('canvas', () => {
     })
     expect(payload['application/x-gve-move-block']).toBe(logId)
   })
-  it('block cards support keyboard selection', () => {
+  it('block cards expose a real, focusable button for selection (no nested-interactive card)', () => {
     useGve.getState().addBlock('log-message', { parentId: null, index: 0 })
     const id = useGve.getState().flow.blocks[0].id
     render(<Canvas />)
     const card = document.querySelector('.gve-block')!
-    expect(card.getAttribute('role')).toBe('button')
-    expect(card.getAttribute('tabindex')).toBe('0')
-    fireEvent.keyDown(card, { key: 'Enter' })
+    expect(card.getAttribute('role')).toBeNull()
+    expect(card.getAttribute('tabindex')).toBeNull()
+    const selectButton = document.querySelector('.gve-block-select') as HTMLButtonElement
+    expect(selectButton.tagName).toBe('BUTTON')
+    selectButton.focus()
+    expect(document.activeElement).toBe(selectButton)
+    fireEvent.click(selectButton)
     expect(useGve.getState().selectedId).toBe(id)
   })
 })

@@ -745,6 +745,18 @@ button:disabled {
   padding: 8px 9px 8px 13px;
 }
 
+.gve-block-select {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  min-width: 0;
+  gap: 12px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  text-align: left;
+}
+
 .gve-block-icon {
   display: grid;
   width: 28px;

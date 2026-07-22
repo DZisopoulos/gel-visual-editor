@@ -5,9 +5,14 @@ export interface FlowMeta {
   scriptType: ScriptType
 }
 export interface FlowParameter {
+  id: string
   name: string
   type: 'string' | 'number' | 'date'
   default: string
+}
+export interface FlowDatasource {
+  id: string
+  value: string
 }
 export interface Block {
   id: string
@@ -20,7 +25,7 @@ export interface Flow {
   gveVersion: '1.0'
   meta: FlowMeta
   parameters: FlowParameter[]
-  datasources: string[]
+  datasources: FlowDatasource[]
   blocks: Block[]
 }
 export function newId(): string {
@@ -31,7 +36,7 @@ export function createEmptyFlow(name = 'Untitled Flow'): Flow {
     gveVersion: '1.0',
     meta: { name, description: '', scriptType: 'process-step' },
     parameters: [],
-    datasources: ['Niku'],
+    datasources: [{ id: newId(), value: 'Niku' }],
     blocks: []
   }
 }
