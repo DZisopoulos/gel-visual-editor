@@ -1,4 +1,4 @@
-appId: com.electron.app
+appId: com.dzisopoulos.gve
 productName: GVE — GEL Visual Editor
 directories:
   buildResources: build
@@ -13,11 +13,10 @@ asarUnpack:
   - resources/**
 win:
   executableName: gve
-nsis:
-  artifactName: ${name}-${version}-setup.${ext}
-  shortcutName: ${productName}
-  uninstallDisplayName: ${productName}
-  createDesktopShortcut: always
+  target:
+    - portable
+portable:
+  artifactName: ${name}-${version}-portable.${ext}
 mac:
   entitlementsInherit: build/entitlements.mac.plist
   extendInfo:
@@ -31,13 +30,8 @@ dmg:
 linux:
   target:
     - AppImage
-    - snap
-    - deb
-  maintainer: electronjs.org
+  maintainer: Dimitrios Zisopoulos
   category: Utility
 appImage:
   artifactName: ${name}-${version}.${ext}
 npmRebuild: false
-publish:
-  provider: generic
-  url: https://example.com/auto-updates
