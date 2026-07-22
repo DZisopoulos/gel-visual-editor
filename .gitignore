@@ -2,6 +2,8 @@ node_modules
 dist
 out
 .agents/
+.claude/
+.codex/
 graphify-out/
 .vscode/
 docs/
