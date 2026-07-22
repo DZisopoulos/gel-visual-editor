@@ -306,10 +306,3 @@ GVE is released under the [PolyForm Noncommercial License 1.0.0](LICENSE.md).
 The license permits use, copying, modification, and distribution for permitted non-commercial purposes. It does not grant commercial use, sublicensing, or transfer rights. See the official [PolyForm Noncommercial terms](https://polyformproject.org/licenses/noncommercial/1.0.0) for the complete license.
 
 Copyright © 2026 Dimitrios Zisopoulos.
-
-## Links
-
-- [Download Alpha 0.1](https://github.com/DZisopoulos/gel-visual-editor/releases/tag/alpha-0.1)
-- [Repository](https://github.com/DZisopoulos/gel-visual-editor)
-- [Issue tracker](https://github.com/DZisopoulos/gel-visual-editor/issues)
-- [License](LICENSE.md)
