@@ -26,6 +26,7 @@ function MenuBar({
 }: MenuBarProps): React.JSX.Element {
   const [openMenu, setOpenMenu] = useState<MenuId | null>(null)
   const menuRef = useRef<HTMLDivElement>(null)
+  const triggerRefs = useRef<Partial<Record<MenuId, HTMLButtonElement>>>({})
   const dirty = useGve((s) => s.dirty)
   const loadFlow = useGve((s) => s.loadFlow)
   const undo = useGve((s) => s.undo)
@@ -38,9 +39,19 @@ function MenuBar({
     const onPointerDown = (event: PointerEvent): void => {
       if (!menuRef.current?.contains(event.target as Node)) setOpenMenu(null)
     }
+    const onKeyDown = (event: KeyboardEvent): void => {
+      if (event.key === 'Escape' && openMenu) {
+        setOpenMenu(null)
+        triggerRefs.current[openMenu]?.focus()
+      }
+    }
     document.addEventListener('pointerdown', onPointerDown)
-    return () => document.removeEventListener('pointerdown', onPointerDown)
-  }, [])
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown)
+      document.removeEventListener('keydown', onKeyDown)
+    }
+  }, [openMenu])
 
   const close = (): void => setOpenMenu(null)
   const newFlow = async (): Promise<void> => {
@@ -86,11 +97,31 @@ function MenuBar({
               aria-haspopup="true"
               aria-expanded={openMenu === menu}
               onClick={() => setOpenMenu((current) => (current === menu ? null : menu))}
+              ref={(el) => {
+                if (el) triggerRefs.current[menu] = el
+              }}
             >
               {menu[0].toUpperCase() + menu.slice(1)}
             </button>
             {openMenu === menu && (
-              <div className="gve-menu-popover">
+              <div
+                className="gve-menu-popover"
+                onKeyDown={(event) => {
+                  if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return
+                  event.preventDefault()
+                  const items = Array.from(
+                    event.currentTarget.querySelectorAll<HTMLButtonElement>(
+                      '.gve-menu-item:not(:disabled)'
+                    )
+                  )
+                  const currentIndex = items.indexOf(document.activeElement as HTMLButtonElement)
+                  const nextIndex =
+                    event.key === 'ArrowDown'
+                      ? (currentIndex + 1) % items.length
+                      : (currentIndex - 1 + items.length) % items.length
+                  items[nextIndex]?.focus()
+                }}
+              >
                 {menu === 'file' && (
                   <>
                     {item('New flow', newFlow, false, 'Ctrl+N')}
