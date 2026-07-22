@@ -35,16 +35,18 @@ export function useDialog(): DialogContextValue {
 }
 
 export function DialogProvider({ children }: { children: ReactNode }): React.JSX.Element {
-  const [request, setRequest] = useState<DialogRequest | null>(null)
+  const [queue, setQueue] = useState<DialogRequest[]>([])
+  const request = queue[0] ?? null
 
   const finish = (value: boolean | string | null): void => {
-    if (!request) return
-    request.resolve(value)
-    setRequest(null)
+    setQueue((current) => {
+      current[0]?.resolve(value)
+      return current.slice(1)
+    })
   }
 
   const enqueue = (next: Omit<DialogRequest, 'resolve'>): Promise<boolean | string | null> =>
-    new Promise((resolve) => setRequest({ ...next, resolve }))
+    new Promise((resolve) => setQueue((current) => [...current, { ...next, resolve }]))
 
   const value: DialogContextValue = {
     confirm: async (title, message, options) =>
