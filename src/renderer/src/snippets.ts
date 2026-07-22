@@ -1,4 +1,6 @@
 import type { Block } from '../../shared/flow'
+import { redactBlockSecrets } from '../../shared/roundtrip'
+import { readJson, writeJson } from './localStorage'
 
 export interface SavedSnippet {
   id: string
@@ -6,34 +8,31 @@ export interface SavedSnippet {
   block: Block
 }
 export const SNIPPETS_KEY = 'gve-snippets'
+const SNIPPETS_VERSION = 1
 
 export function readSnippets(): SavedSnippet[] {
-  try {
-    const value = JSON.parse(localStorage.getItem(SNIPPETS_KEY) ?? '[]') as unknown
-    return Array.isArray(value)
-      ? (value.filter(
-          (item) =>
-            item && typeof item.id === 'string' && typeof item.name === 'string' && item.block
-        ) as SavedSnippet[])
-      : []
-  } catch {
-    return []
-  }
+  const value = readJson<unknown>(SNIPPETS_KEY, SNIPPETS_VERSION, [])
+  return Array.isArray(value)
+    ? (value.filter(
+        (item) => item && typeof item.id === 'string' && typeof item.name === 'string' && item.block
+      ) as SavedSnippet[])
+    : []
 }
 
 export function saveSnippet(block: Block, name: string): SavedSnippet {
   const snippet: SavedSnippet = {
     id: `snippet-${Date.now()}`,
     name: name.trim() || block.props.stepName || block.type,
-    block: structuredClone(block)
+    block: redactBlockSecrets(structuredClone(block))
   }
-  localStorage.setItem(SNIPPETS_KEY, JSON.stringify([snippet, ...readSnippets()].slice(0, 30)))
+  writeJson(SNIPPETS_KEY, SNIPPETS_VERSION, [snippet, ...readSnippets()].slice(0, 30))
   return snippet
 }
 
 export function removeSnippet(id: string): void {
-  localStorage.setItem(
+  writeJson(
     SNIPPETS_KEY,
-    JSON.stringify(readSnippets().filter((snippet) => snippet.id !== id))
+    SNIPPETS_VERSION,
+    readSnippets().filter((snippet) => snippet.id !== id)
   )
 }

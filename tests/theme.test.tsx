@@ -14,8 +14,8 @@ describe('theme preferences', () => {
 
     expect(document.querySelector('.gve-app')?.getAttribute('data-app-theme')).toBe('github-dark')
     expect(JSON.parse(window.localStorage.getItem(THEME_STORAGE_KEY) ?? '{}')).toEqual({
-      app: 'github-dark',
-      xml: 'dracula'
+      v: 1,
+      data: { app: 'github-dark', xml: 'dracula' }
     })
 
     fireEvent.click(screen.getByRole('tab', { name: 'XML Preview' }))

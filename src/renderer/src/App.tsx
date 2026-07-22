@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import Canvas from './components/Canvas'
 import CommandPalette from './components/CommandPalette'
 import AboutDialog from './components/AboutDialog'
 import DialogProvider, { useDialog } from './components/DialogProvider'
+import { ErrorBoundary } from './components/ErrorBoundary'
 import MenuBar from './components/MenuBar'
 import ValidationView from './components/ValidationView'
 import Footer from './components/Footer'
@@ -19,31 +20,18 @@ import {
   type ThemePreferences
 } from './theme'
 import { useGve } from './store'
-import { parseFlowDocument } from '../../shared/schema'
-
-const LAYOUT_KEY = 'gve-layout-preferences'
-const AUTOSAVE_KEY = 'gve-autosave-draft'
-interface LayoutPreferences {
-  paletteWidth: number
-  inspectorWidth: number
-}
-const DEFAULT_LAYOUT: LayoutPreferences = { paletteWidth: 260, inspectorWidth: 340 }
-
-function loadLayoutPreferences(): LayoutPreferences {
-  try {
-    const value = JSON.parse(localStorage.getItem(LAYOUT_KEY) ?? '') as Partial<LayoutPreferences>
-    return {
-      paletteWidth: Number.isFinite(value.paletteWidth)
-        ? Math.min(420, Math.max(180, value.paletteWidth!))
-        : DEFAULT_LAYOUT.paletteWidth,
-      inspectorWidth: Number.isFinite(value.inspectorWidth)
-        ? Math.min(520, Math.max(260, value.inspectorWidth!))
-        : DEFAULT_LAYOUT.inspectorWidth
-    }
-  } catch {
-    return DEFAULT_LAYOUT
-  }
-}
+import { writeJson } from './localStorage'
+import { useAutosave } from './hooks/useAutosave'
+import { useGlobalShortcuts } from './hooks/useGlobalShortcuts'
+import { useResponsiveLayout } from './hooks/useResponsiveLayout'
+import {
+  DEFAULT_LAYOUT,
+  LAYOUT_KEY,
+  LAYOUT_VERSION,
+  loadLayoutPreferences,
+  usePanelResize,
+  type LayoutPreferences
+} from './hooks/usePanelResize'
 
 function AppContent(): React.JSX.Element {
   const [activeView, setActiveView] = useState<'flow' | 'xml' | 'validate'>('flow')
@@ -52,13 +40,8 @@ function AppContent(): React.JSX.Element {
   const [commandOpen, setCommandOpen] = useState(false)
   const [aboutOpen, setAboutOpen] = useState(false)
   const [focusMode, setFocusMode] = useState(false)
-  const [compactPanels, setCompactPanels] = useState(
-    () =>
-      typeof window !== 'undefined' && Boolean(window.matchMedia?.('(max-width: 1100px)').matches)
-  )
   const [paletteExpanded, setPaletteExpanded] = useState(false)
   const [inspectorExpanded, setInspectorExpanded] = useState(false)
-  const [, setSystemThemeTick] = useState(0)
   const dialog = useDialog()
   const selectedId = useGve((s) => s.selectedId)
   const flow = useGve((s) => s.flow)
@@ -67,56 +50,19 @@ function AppContent(): React.JSX.Element {
   const undo = useGve((s) => s.undo)
   const redo = useGve((s) => s.redo)
   const remove = useGve((s) => s.remove)
-  const resizeRef = useRef<{
-    kind: 'palette' | 'inspector'
-    startX: number
-    startWidth: number
-  } | null>(null)
+  const select = useGve((s) => s.select)
+  const compactPanels = useResponsiveLayout()
+  const { startResize } = usePanelResize(layout, setLayout)
 
   useEffect(() => {
     saveThemePreferences(themePreferences)
   }, [themePreferences])
   useEffect(() => {
-    localStorage.setItem(LAYOUT_KEY, JSON.stringify(layout))
+    writeJson(LAYOUT_KEY, LAYOUT_VERSION, layout)
   }, [layout])
   useEffect(() => {
     window.gve?.setDirty?.(dirty)
   }, [dirty])
-  useEffect(() => {
-    const media = window.matchMedia?.('(max-width: 1100px)')
-    if (!media) return
-    const update = (): void => setCompactPanels(media.matches)
-    update()
-    media.addEventListener?.('change', update)
-    return () => media.removeEventListener?.('change', update)
-  }, [])
-  useEffect(() => {
-    const media = window.matchMedia?.('(prefers-color-scheme: dark)')
-    if (!media) return
-    const update = (): void => setSystemThemeTick((value) => value + 1)
-    media.addEventListener?.('change', update)
-    return () => media.removeEventListener?.('change', update)
-  }, [])
-  useEffect(() => {
-    const saved = localStorage.getItem(AUTOSAVE_KEY)
-    if (!saved) return
-    try {
-      const recovered = parseFlowDocument(JSON.parse(saved))
-      void dialog
-        .confirm('Recover unsaved draft?', `Recover the unsaved draft “${recovered.meta.name}”?`, {
-          confirmLabel: 'Recover',
-          cancelLabel: 'Discard'
-        })
-        .then((accepted) => {
-          if (accepted) loadFlow(recovered, null)
-          else localStorage.removeItem(AUTOSAVE_KEY)
-        })
-    } catch {
-      localStorage.removeItem(AUTOSAVE_KEY)
-    }
-    // Recovery is intentionally offered once when the shell mounts.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
   useEffect(() => {
     const unsubscribe = window.gve?.onCloseRequest?.(() => {
       void dialog
@@ -127,89 +73,19 @@ function AppContent(): React.JSX.Element {
     })
     return unsubscribe
   }, [dialog])
-  useEffect(() => {
-    if (!dirty) {
-      localStorage.removeItem(AUTOSAVE_KEY)
-      return
-    }
-    const timer = window.setTimeout(
-      () => localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(flow)),
-      800
-    )
-    return () => window.clearTimeout(timer)
-  }, [dirty, flow])
-  useEffect(() => {
-    const onMove = (event: PointerEvent): void => {
-      const resize = resizeRef.current
-      if (!resize) return
-      const delta = event.clientX - resize.startX
-      setLayout((current) =>
-        resize.kind === 'palette'
-          ? { ...current, paletteWidth: Math.min(420, Math.max(180, resize.startWidth + delta)) }
-          : { ...current, inspectorWidth: Math.min(520, Math.max(260, resize.startWidth - delta)) }
-      )
-    }
-    const onUp = (): void => {
-      resizeRef.current = null
-      document.body.style.cursor = ''
-      document.body.style.userSelect = ''
-    }
-    window.addEventListener('pointermove', onMove)
-    window.addEventListener('pointerup', onUp)
-    return () => {
-      window.removeEventListener('pointermove', onMove)
-      window.removeEventListener('pointerup', onUp)
-    }
-  }, [])
-  useEffect(() => {
-    const onKeyDown = (event: KeyboardEvent): void => {
-      const target = event.target as HTMLElement | null
-      const isTyping =
-        target?.tagName === 'INPUT' ||
-        target?.tagName === 'TEXTAREA' ||
-        target?.tagName === 'SELECT' ||
-        target?.isContentEditable
-      const modifier = event.ctrlKey || event.metaKey
-      if (modifier && event.key.toLowerCase() === 'k') {
-        event.preventDefault()
-        setCommandOpen(true)
-        return
-      }
-      if (isTyping || commandOpen) return
-      if (modifier && event.shiftKey && event.key.toLowerCase() === 'f') {
-        event.preventDefault()
-        setFocusMode((value) => !value)
-        return
-      }
-      if (modifier && event.key.toLowerCase() === 'z') {
-        event.preventDefault()
-        event.shiftKey ? redo() : undo()
-        return
-      }
-      if (modifier && event.key.toLowerCase() === 'y') {
-        event.preventDefault()
-        redo()
-        return
-      }
-      if ((event.key === 'Delete' || event.key === 'Backspace') && selectedId) {
-        event.preventDefault()
-        remove(selectedId)
-      }
-    }
-    window.addEventListener('keydown', onKeyDown)
-    return () => window.removeEventListener('keydown', onKeyDown)
-  }, [commandOpen, redo, remove, selectedId, undo])
 
-  const startResize = (kind: 'palette' | 'inspector', event: React.PointerEvent): void => {
-    event.preventDefault()
-    resizeRef.current = {
-      kind,
-      startX: event.clientX,
-      startWidth: kind === 'palette' ? layout.paletteWidth : layout.inspectorWidth
-    }
-    document.body.style.cursor = 'col-resize'
-    document.body.style.userSelect = 'none'
-  }
+  useAutosave({ dirty, flow, loadFlow, dialog })
+  useGlobalShortcuts({
+    commandOpen,
+    setCommandOpen,
+    setFocusMode,
+    selectedId,
+    select,
+    remove,
+    undo,
+    redo
+  })
+
   const updateTheme = (kind: keyof ThemePreferences, value: ThemeId): void =>
     setThemePreferences((preferences) => ({ ...preferences, [kind]: value }))
   const paletteRail = compactPanels && !paletteExpanded
@@ -247,13 +123,28 @@ function AppContent(): React.JSX.Element {
         />
         <div className="gve-center">
           <div className="gve-center-content">
-            {activeView === 'flow' ? (
-              <Canvas />
-            ) : activeView === 'xml' ? (
-              <XmlPreview theme={themePreferences.xml} />
-            ) : (
-              <ValidationView onOpenFlow={() => setActiveView('flow')} />
-            )}
+            <ErrorBoundary
+              fallback={(retry) => (
+                <div className="gve-empty-state">
+                  <div className="gve-empty-icon" aria-hidden="true">
+                    !
+                  </div>
+                  <h2>Something went wrong</h2>
+                  <p>This view hit an unexpected error. Your flow data is safe — try again.</p>
+                  <button type="button" onClick={retry}>
+                    Retry
+                  </button>
+                </div>
+              )}
+            >
+              {activeView === 'flow' ? (
+                <Canvas />
+              ) : activeView === 'xml' ? (
+                <XmlPreview theme={themePreferences.xml} />
+              ) : (
+                <ValidationView onOpenFlow={() => setActiveView('flow')} />
+              )}
+            </ErrorBoundary>
           </div>
           <div className="gve-view-tabs" role="tablist" aria-label="Workspace view">
             {(['flow', 'xml', 'validate'] as const).map((view) => (

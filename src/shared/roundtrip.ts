@@ -25,16 +25,23 @@ const MARKER_START = '<!-- GVE-FLOW v1.0\n'
 // before embedding it so a shared/redacted-looking export doesn't still leak
 // passwords via the hidden comment. The GEL body (generated separately) is
 // untouched: Clarity needs the real password there at runtime.
-function redactSecrets(flow: Flow): Flow {
-  const strip = (block: Block): Block => {
-    const def = getNodeDef(block.type)
-    const props = { ...block.props }
-    for (const field of def.fields) {
-      if (field.kind === 'secret' && props[field.key]) props[field.key] = ''
-    }
-    return { ...block, props, ...(block.children ? { children: block.children.map(strip) } : {}) }
+export function redactSecrets(flow: Flow): Flow {
+  return { ...flow, blocks: flow.blocks.map(redactBlockSecrets) }
+}
+
+// Single-block variant of redactSecrets, since snippets persist one block at
+// a time rather than a whole flow.
+export function redactBlockSecrets(block: Block): Block {
+  const def = getNodeDef(block.type)
+  const props = { ...block.props }
+  for (const field of def.fields) {
+    if (field.kind === 'secret' && props[field.key]) props[field.key] = ''
   }
-  return { ...flow, blocks: flow.blocks.map(strip) }
+  return {
+    ...block,
+    props,
+    ...(block.children ? { children: block.children.map(redactBlockSecrets) } : {})
+  }
 }
 
 export function exportXml(flow: Flow): string {
