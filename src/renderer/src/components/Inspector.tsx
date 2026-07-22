@@ -16,11 +16,13 @@ function fieldClass(field: FieldDef, value: string): string {
 
 function Inspector({
   onResizeStart,
+  onResizeKey,
   compact = false,
   collapsed = false,
   onToggleCollapsed
 }: {
   onResizeStart?: (event: React.PointerEvent) => void
+  onResizeKey?: (delta: number) => void
   compact?: boolean
   collapsed?: boolean
   onToggleCollapsed?: () => void
@@ -64,7 +66,19 @@ function Inspector({
           role="separator"
           aria-orientation="vertical"
           aria-label="Resize inspector"
+          tabIndex={0}
           onPointerDown={(event) => onResizeStart?.(event)}
+          onKeyDown={(event) => {
+            const STEP = 16
+            if (event.key === 'ArrowLeft') {
+              event.preventDefault()
+              onResizeKey?.(-STEP)
+            }
+            if (event.key === 'ArrowRight') {
+              event.preventDefault()
+              onResizeKey?.(STEP)
+            }
+          }}
         />
         <div className="gve-panel-title">Flow settings</div>
         <div className="gve-inspector-body">
@@ -223,7 +237,19 @@ function Inspector({
         role="separator"
         aria-orientation="vertical"
         aria-label="Resize inspector"
+        tabIndex={0}
         onPointerDown={(event) => onResizeStart?.(event)}
+        onKeyDown={(event) => {
+          const STEP = 16
+          if (event.key === 'ArrowLeft') {
+            event.preventDefault()
+            onResizeKey?.(-STEP)
+          }
+          if (event.key === 'ArrowRight') {
+            event.preventDefault()
+            onResizeKey?.(STEP)
+          }
+        }}
       />
       <div className="gve-panel-title">{def.name}</div>
       <div className="gve-inspector-body">

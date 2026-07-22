@@ -18,11 +18,13 @@ const categories: NodeDefinition['category'][] = [
 
 function Palette({
   onResizeStart,
+  onResizeKey,
   compact = false,
   collapsed = false,
   onToggleCollapsed
 }: {
   onResizeStart?: (event: React.PointerEvent) => void
+  onResizeKey?: (delta: number) => void
   compact?: boolean
   collapsed?: boolean
   onToggleCollapsed?: () => void
@@ -77,7 +79,19 @@ function Palette({
         role="separator"
         aria-orientation="vertical"
         aria-label="Resize block palette"
+        tabIndex={0}
         onPointerDown={(event) => onResizeStart?.(event)}
+        onKeyDown={(event) => {
+          const STEP = 16
+          if (event.key === 'ArrowLeft') {
+            event.preventDefault()
+            onResizeKey?.(-STEP)
+          }
+          if (event.key === 'ArrowRight') {
+            event.preventDefault()
+            onResizeKey?.(STEP)
+          }
+        }}
       />
       <div className="gve-panel-title">Blocks</div>
       <div className="gve-palette-search">
