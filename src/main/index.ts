@@ -7,6 +7,12 @@ import icon from '../../resources/icon.png?asset'
 /** webContents ids whose renderer currently holds unsaved changes. */
 const unsavedContents = new Set<number>()
 
+/** URL schemes allowed to be handed off to the OS via `shell.openExternal`. */
+const ALLOWED_EXTERNAL_SCHEMES = new Set(['https:', 'http:'])
+
+/** Filesystem paths this session has actually opened or saved to, via a native dialog. */
+const knownPaths = new Set<string>()
+
 function createWindow(): void {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
@@ -19,7 +25,7 @@ function createWindow(): void {
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
-      sandbox: false
+      sandbox: true
     }
   })
 
@@ -53,7 +59,12 @@ function createWindow(): void {
   })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
-    shell.openExternal(details.url)
+    try {
+      const url = new URL(details.url)
+      if (ALLOWED_EXTERNAL_SCHEMES.has(url.protocol)) shell.openExternal(details.url)
+    } catch {
+      // malformed URL — do not open
+    }
     return { action: 'deny' }
   })
 
@@ -91,6 +102,7 @@ app.whenReady().then(() => {
     if (result.canceled || result.filePaths.length === 0) return null
 
     const filePath = result.filePaths[0]
+    knownPaths.add(filePath)
     app.addRecentDocument(filePath)
     return { filePath, content: await readFile(filePath, 'utf8') }
   })
@@ -99,6 +111,7 @@ app.whenReady().then(() => {
     'gve:saveFlow',
     async (_event, suggestedName: string, content: string, existingPath: string | null) => {
       let filePath = existingPath
+      if (filePath && !knownPaths.has(filePath)) filePath = null
       if (!filePath) {
         const result = await dialog.showSaveDialog({
           defaultPath: withExtension(suggestedName, '.gve'),
@@ -108,6 +121,7 @@ app.whenReady().then(() => {
         filePath = result.filePath
       }
 
+      knownPaths.add(filePath)
       await atomicWrite(filePath, content)
       app.addRecentDocument(filePath)
       return filePath
