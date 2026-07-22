@@ -1,5 +1,14 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, useContext, useState, type ReactNode } from 'react'
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode
+} from 'react'
 
 type DialogKind = 'confirm' | 'alert' | 'prompt'
 interface DialogRequest {
@@ -45,18 +54,35 @@ export function DialogProvider({ children }: { children: ReactNode }): React.JSX
     })
   }
 
-  const enqueue = (next: Omit<DialogRequest, 'resolve'>): Promise<boolean | string | null> =>
-    new Promise((resolve) => setQueue((current) => [...current, { ...next, resolve }]))
+  const enqueue = useCallback(
+    (next: Omit<DialogRequest, 'resolve'>): Promise<boolean | string | null> =>
+      new Promise((resolve) => setQueue((current) => [...current, { ...next, resolve }])),
+    []
+  )
 
-  const value: DialogContextValue = {
-    confirm: async (title, message, options) =>
-      Boolean(await enqueue({ kind: 'confirm', title, message, ...options })),
-    alert: async (title, message) => {
+  const confirm = useCallback(
+    async (
+      title: string,
+      message: string,
+      options?: Pick<DialogRequest, 'confirmLabel' | 'cancelLabel'>
+    ) => Boolean(await enqueue({ kind: 'confirm', title, message, ...options })),
+    [enqueue]
+  )
+  const alert = useCallback(
+    async (title: string, message: string) => {
       await enqueue({ kind: 'alert', title, message })
     },
-    prompt: (title, message, defaultValue = '') =>
-      enqueue({ kind: 'prompt', title, message, defaultValue }) as Promise<string | null>
-  }
+    [enqueue]
+  )
+  const prompt = useCallback(
+    (title: string, message: string, defaultValue = '') =>
+      enqueue({ kind: 'prompt', title, message, defaultValue }) as Promise<string | null>,
+    [enqueue]
+  )
+  const value = useMemo<DialogContextValue>(
+    () => ({ confirm, alert, prompt }),
+    [confirm, alert, prompt]
+  )
 
   return (
     <DialogContext.Provider value={value}>
@@ -73,73 +99,78 @@ function DialogView({
   request: DialogRequest
   onFinish: (value: boolean | string | null) => void
 }): React.JSX.Element {
+  const dialogRef = useRef<HTMLDialogElement>(null)
   const [input, setInput] = useState(request.defaultValue ?? '')
   const isPrompt = request.kind === 'prompt'
   const isAlert = request.kind === 'alert'
+
+  useEffect(() => {
+    dialogRef.current?.showModal()
+  }, [])
+
+  const close = (value: boolean | string | null): void => {
+    dialogRef.current?.close()
+    onFinish(value)
+  }
+
   return (
-    <div
-      className="gve-modal-backdrop"
-      role="presentation"
-      onMouseDown={(event) => {
-        if (event.target === event.currentTarget) onFinish(isAlert ? true : isPrompt ? null : false)
+    <dialog
+      ref={dialogRef}
+      className="gve-about-dialog gve-confirm-dialog"
+      aria-labelledby="gve-dialog-title"
+      aria-describedby="gve-dialog-message"
+      onCancel={(event) => {
+        event.preventDefault()
+        close(isAlert ? true : isPrompt ? null : false)
+      }}
+      onClick={(event) => {
+        if (event.target === dialogRef.current) close(isAlert ? true : isPrompt ? null : false)
       }}
     >
-      <section
-        className="gve-about-dialog gve-confirm-dialog"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="gve-dialog-title"
-        aria-describedby="gve-dialog-message"
-      >
-        <div className="gve-about-hero">
-          <div className="gve-about-mark" aria-hidden="true">
-            GVE
-          </div>
-          <div>
-            <h2 id="gve-dialog-title">{request.title}</h2>
-            <p>GEL Visual Editor</p>
-          </div>
-          <button
-            type="button"
-            className="gve-modal-close"
-            aria-label="Close dialog"
-            onClick={() => onFinish(isAlert ? true : isPrompt ? null : false)}
-          >
-            ×
+      <div className="gve-about-hero">
+        <div className="gve-about-mark" aria-hidden="true">
+          GVE
+        </div>
+        <div>
+          <h2 id="gve-dialog-title">{request.title}</h2>
+          <p>GEL Visual Editor</p>
+        </div>
+        <button
+          type="button"
+          className="gve-modal-close"
+          aria-label="Close dialog"
+          onClick={() => close(isAlert ? true : isPrompt ? null : false)}
+        >
+          ×
+        </button>
+      </div>
+      <div className="gve-about-body">
+        <p id="gve-dialog-message">{request.message}</p>
+        {isPrompt && (
+          <input
+            autoFocus
+            className="gve-dialog-input"
+            aria-label="Dialog value"
+            value={input}
+            onChange={(event) => setInput(event.target.value)}
+            onKeyDown={(event) => {
+              // Escape is handled natively via the dialog's onCancel above.
+              if (event.key === 'Enter') close(input)
+            }}
+          />
+        )}
+      </div>
+      <div className="gve-about-actions">
+        {!isAlert && (
+          <button type="button" onClick={() => close(isPrompt ? null : false)}>
+            {request.cancelLabel ?? 'Cancel'}
           </button>
-        </div>
-        <div className="gve-about-body">
-          <p id="gve-dialog-message">{request.message}</p>
-          {isPrompt && (
-            <input
-              autoFocus
-              className="gve-dialog-input"
-              aria-label="Dialog value"
-              value={input}
-              onChange={(event) => setInput(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter') onFinish(input)
-                if (event.key === 'Escape') onFinish(null)
-              }}
-            />
-          )}
-        </div>
-        <div className="gve-about-actions">
-          {!isAlert && (
-            <button type="button" onClick={() => onFinish(isPrompt ? null : false)}>
-              {request.cancelLabel ?? 'Cancel'}
-            </button>
-          )}
-          <button
-            type="button"
-            autoFocus={!isPrompt}
-            onClick={() => onFinish(isPrompt ? input : true)}
-          >
-            {isAlert ? 'Done' : isPrompt ? 'Save' : (request.confirmLabel ?? 'Confirm')}
-          </button>
-        </div>
-      </section>
-    </div>
+        )}
+        <button type="button" autoFocus={!isPrompt} onClick={() => close(isPrompt ? input : true)}>
+          {isAlert ? 'Done' : isPrompt ? 'Save' : (request.confirmLabel ?? 'Confirm')}
+        </button>
+      </div>
+    </dialog>
   )
 }
 

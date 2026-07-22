@@ -52,8 +52,12 @@ describe('app shell', () => {
   it('opens the command palette with Ctrl-K', () => {
     render(<App />)
     fireEvent.keyDown(window, { key: 'k', ctrlKey: true })
-    expect(screen.getByRole('dialog', { name: 'Command palette' })).toBeTruthy()
-    fireEvent.keyDown(screen.getByRole('textbox', { name: 'Search commands' }), { key: 'Escape' })
+    const dialog = screen.getByRole('dialog', { name: 'Command palette' })
+    expect(dialog).toBeTruthy()
+    // Escape on a native <dialog> fires a non-bubbling `cancel` event on the
+    // dialog itself (handled by CommandPalette's onCancel), rather than a
+    // keydown that bubbles up from the search input.
+    fireEvent(dialog, new Event('cancel', { cancelable: true }))
     expect(document.querySelector('.gve-command-palette')).toBeNull()
   })
 
