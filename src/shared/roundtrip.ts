@@ -1,5 +1,6 @@
-import type { Flow } from './flow'
+import type { Block, Flow } from './flow'
 import { generateGel } from './generate'
+import { getNodeDef } from './registry'
 import { parseFlowDocument } from './schema'
 import { decodeCommentJson, encodeCommentJson, fnv1a } from './xmlutil'
 
@@ -19,9 +20,26 @@ export class GveImportError extends Error {
 
 const MARKER_START = '<!-- GVE-FLOW v1.0\n'
 
+// The comment payload is an informational round-trip copy of the flow, not a
+// second place credentials should live — strip secret-kind field values
+// before embedding it so a shared/redacted-looking export doesn't still leak
+// passwords via the hidden comment. The GEL body (generated separately) is
+// untouched: Clarity needs the real password there at runtime.
+function redactSecrets(flow: Flow): Flow {
+  const strip = (block: Block): Block => {
+    const def = getNodeDef(block.type)
+    const props = { ...block.props }
+    for (const field of def.fields) {
+      if (field.kind === 'secret' && props[field.key]) props[field.key] = ''
+    }
+    return { ...block, props, ...(block.children ? { children: block.children.map(strip) } : {}) }
+  }
+  return { ...flow, blocks: flow.blocks.map(strip) }
+}
+
 export function exportXml(flow: Flow): string {
   const body = generateGel(flow)
-  return `${MARKER_START}${encodeCommentJson(flow)}\nBODY-HASH:${fnv1a(body)}\n-->\n${body}`
+  return `${MARKER_START}${encodeCommentJson(redactSecrets(flow))}\nBODY-HASH:${fnv1a(body)}\n-->\n${body}`
 }
 
 export function importXml(text: string): ImportResult {

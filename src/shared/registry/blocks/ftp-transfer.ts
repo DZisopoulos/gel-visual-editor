@@ -16,7 +16,7 @@ export const ftpTransfer: NodeDefinition = {
     },
     { key: 'host', label: 'Host', kind: 'text', required: true },
     { key: 'username', label: 'Username', kind: 'text' },
-    { key: 'password', label: 'Password', kind: 'text' },
+    { key: 'password', label: 'Password', kind: 'secret' },
     { key: 'localPath', label: 'Local path', kind: 'text', required: true },
     { key: 'remotePath', label: 'Remote path', kind: 'text', required: true }
   ],
