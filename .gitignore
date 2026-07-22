@@ -10,3 +10,4 @@ docs/
 .DS_Store
 .eslintcache
 *.log*
+react-doctor-report*.json
