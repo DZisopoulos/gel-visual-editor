@@ -1,4 +1,5 @@
 import type { editor } from 'monaco-editor'
+import { readJson, writeJson } from './localStorage'
 
 export type ThemeId =
   | 'auto'
@@ -344,6 +345,7 @@ export const THEME_OPTIONS: Array<{ id: ThemeId; name: string }> = [
   ...themes
 ]
 export const THEME_STORAGE_KEY = 'gve-theme-preferences'
+const THEME_STORAGE_VERSION = 1
 
 export interface ThemePreferences {
   app: ThemeId
@@ -368,24 +370,21 @@ function isThemeId(value: unknown): value is ThemeId {
 export function loadThemePreferences(): ThemePreferences {
   const fallback: ThemePreferences = { app: 'gve-aurora', xml: 'gve-aurora' }
   if (typeof window === 'undefined') return fallback
-  try {
-    const parsed = JSON.parse(window.localStorage.getItem(THEME_STORAGE_KEY) ?? '{}') as Record<
-      string,
-      unknown
-    >
-    return {
-      app: isThemeId(parsed.app) ? parsed.app : fallback.app,
-      xml: isThemeId(parsed.xml) ? parsed.xml : fallback.xml
-    }
-  } catch {
-    return fallback
+  const parsed = readJson<Partial<ThemePreferences>>(
+    THEME_STORAGE_KEY,
+    THEME_STORAGE_VERSION,
+    fallback
+  )
+  return {
+    app: isThemeId(parsed.app) ? parsed.app : fallback.app,
+    xml: isThemeId(parsed.xml) ? parsed.xml : fallback.xml
   }
 }
 
 export function saveThemePreferences(preferences: ThemePreferences): void {
   if (typeof window === 'undefined') return
   try {
-    window.localStorage.setItem(THEME_STORAGE_KEY, JSON.stringify(preferences))
+    writeJson(THEME_STORAGE_KEY, THEME_STORAGE_VERSION, preferences)
   } catch {
     /* storage may be unavailable */
   }
