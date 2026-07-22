@@ -4,7 +4,11 @@ import { electronAPI } from '@electron-toolkit/preload'
 const gve = {
   openFlow: (): Promise<{ filePath: string; content: string } | null> =>
     ipcRenderer.invoke('gve:openFlow'),
-  saveFlow: (suggestedName: string, content: string, existingPath: string | null): Promise<string | null> =>
+  saveFlow: (
+    suggestedName: string,
+    content: string,
+    existingPath: string | null
+  ): Promise<string | null> =>
     ipcRenderer.invoke('gve:saveFlow', suggestedName, content, existingPath),
   exportXml: (suggestedName: string, content: string): Promise<string | null> =>
     ipcRenderer.invoke('gve:exportXml', suggestedName, content),

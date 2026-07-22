@@ -60,16 +60,24 @@ describe('app shell', () => {
   it('mirrors the dirty flag to the main process so close can be guarded', () => {
     const setDirty = vi.fn()
     const original = window.gve
-    Object.defineProperty(window, 'gve', { value: { setDirty }, configurable: true, writable: true })
+    Object.defineProperty(window, 'gve', {
+      value: { setDirty },
+      configurable: true,
+      writable: true
+    })
     try {
       useGve.getState().loadFlow(createEmptyFlow('Clean'), null)
       render(<App />)
       expect(setDirty).toHaveBeenLastCalledWith(false)
 
-      act(() => { useGve.getState().addBlock('log-message', { parentId: null, index: 0 }) })
+      act(() => {
+        useGve.getState().addBlock('log-message', { parentId: null, index: 0 })
+      })
       expect(setDirty).toHaveBeenLastCalledWith(true)
 
-      act(() => { useGve.getState().markSaved('C:/x.gve') })
+      act(() => {
+        useGve.getState().markSaved('C:/x.gve')
+      })
       expect(setDirty).toHaveBeenLastCalledWith(false)
     } finally {
       Object.defineProperty(window, 'gve', { value: original, configurable: true, writable: true })

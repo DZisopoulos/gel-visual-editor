@@ -18,7 +18,9 @@ describe('fileio', () => {
 
   it('parseFlowFile rejects garbage with GveImportError', () => {
     expect(() => parseFlowFile('not json', 'broken.gve')).toThrowError(GveImportError)
-    try { parseFlowFile('not json', 'broken.gve') } catch (error) {
+    try {
+      parseFlowFile('not json', 'broken.gve')
+    } catch (error) {
       expect((error as GveImportError).reason).toBe('bad-payload')
     }
   })

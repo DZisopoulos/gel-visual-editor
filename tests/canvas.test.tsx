@@ -4,7 +4,16 @@ import Canvas from '../src/renderer/src/components/Canvas'
 import { useGve } from '../src/renderer/src/store'
 import { createEmptyFlow } from '../src/shared/flow'
 
-const dt = (type: string, value: string) => ({
+interface DragPayload {
+  dataTransfer: {
+    getData: (k: string) => string
+    types: string[]
+    dropEffect: string
+    effectAllowed: string
+  }
+}
+
+const dt = (type: string, value: string): DragPayload => ({
   dataTransfer: {
     getData: (k: string) => (k === type ? value : ''),
     types: [type],

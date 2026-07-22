@@ -9,10 +9,29 @@ describe('palette', () => {
     useGve.getState().loadFlow(createEmptyFlow('T'), null)
     render(<Palette />)
     for (const name of [
-      'Set Variable', 'SQL Query', 'For Each', 'Log Message', 'Raw GEL',
-      'Choose', 'When', 'Otherwise', 'Switch', 'Case', 'Default', 'Try', 'Catch', 'Comment',
-      'Send Email', 'XOG Read', 'XOG Write', 'SOAP Invoke', 'HTTP Call', 'File Read', 'File Write',
-      'FTP Transfer', 'Include Script'
+      'Set Variable',
+      'SQL Query',
+      'For Each',
+      'Log Message',
+      'Raw GEL',
+      'Choose',
+      'When',
+      'Otherwise',
+      'Switch',
+      'Case',
+      'Default',
+      'Try',
+      'Catch',
+      'Comment',
+      'Send Email',
+      'XOG Read',
+      'XOG Write',
+      'SOAP Invoke',
+      'HTTP Call',
+      'File Read',
+      'File Write',
+      'FTP Transfer',
+      'Include Script'
     ]) {
       expect(screen.getByText(name)).toBeTruthy()
     }

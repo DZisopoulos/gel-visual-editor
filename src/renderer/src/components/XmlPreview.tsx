@@ -12,7 +12,7 @@ function PlainPreview({ xml }: { xml: string }): React.JSX.Element {
 }
 
 function XmlPreview({ theme = 'gve-dark' }: { theme?: ThemeId }): React.JSX.Element {
-  const flow = useGve(s => s.flow)
+  const flow = useGve((s) => s.flow)
   const xml = useMemo(() => generateGel(flow), [flow])
   const isJsdom = typeof navigator !== 'undefined' && /jsdom/i.test(navigator.userAgent)
   const [systemTheme, setSystemTheme] = useState(() => getSystemThemeId())
@@ -27,16 +27,28 @@ function XmlPreview({ theme = 'gve-dark' }: { theme?: ThemeId }): React.JSX.Elem
   const resolvedTheme = theme === 'auto' ? systemTheme : theme
   const definition = getTheme(resolvedTheme)
   const copy = async (): Promise<void> => {
-    try { await navigator.clipboard?.writeText(xml); push('XML copied to clipboard.', 'success') }
-    catch { push('Could not copy XML to the clipboard.', 'error') }
+    try {
+      await navigator.clipboard?.writeText(xml)
+      push('XML copied to clipboard.', 'success')
+    } catch {
+      push('Could not copy XML to the clipboard.', 'error')
+    }
   }
 
   return (
-    <section className="gve-xmlpane" aria-label="XML preview" data-xml-theme={theme} data-effective-xml-theme={resolvedTheme} style={definition.xmlVars as React.CSSProperties}>
+    <section
+      className="gve-xmlpane"
+      aria-label="XML preview"
+      data-xml-theme={theme}
+      data-effective-xml-theme={resolvedTheme}
+      style={definition.xmlVars as React.CSSProperties}
+    >
       <div className="gve-xml-toolbar">
         <span>XML Preview</span>
         <div className="gve-xml-actions">
-          <button type="button" onClick={() => void copy()}>Copy</button>
+          <button type="button" onClick={() => void copy()}>
+            Copy
+          </button>
         </div>
       </div>
       <div className="gve-xml-content">

@@ -38,7 +38,9 @@ function DropZone({ target }: { target: DropTarget }): React.JSX.Element {
         if (blockId) move(blockId, target)
       }}
     >
-      <svg className="gve-connector-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v17M7 14l5 5 5-5" /></svg>
+      <svg className="gve-connector-svg" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 2v17M7 14l5 5 5-5" />
+      </svg>
     </div>
   )
 }
@@ -83,9 +85,18 @@ function Canvas(): React.JSX.Element {
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent): void => {
       if (!(event.ctrlKey || event.metaKey)) return
-      if (event.key === '+' || event.key === '=') { event.preventDefault(); setZoom((value) => Math.min(1.4, Number((value + 0.1).toFixed(1)))) }
-      if (event.key === '-') { event.preventDefault(); setZoom((value) => Math.max(0.7, Number((value - 0.1).toFixed(1)))) }
-      if (event.key === '0') { event.preventDefault(); setZoom(1) }
+      if (event.key === '+' || event.key === '=') {
+        event.preventDefault()
+        setZoom((value) => Math.min(1.4, Number((value + 0.1).toFixed(1))))
+      }
+      if (event.key === '-') {
+        event.preventDefault()
+        setZoom((value) => Math.max(0.7, Number((value - 0.1).toFixed(1))))
+      }
+      if (event.key === '0') {
+        event.preventDefault()
+        setZoom(1)
+      }
     }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
@@ -93,46 +104,102 @@ function Canvas(): React.JSX.Element {
 
   return (
     <main className="gve-canvas" aria-label="Flow canvas" onClick={() => select(null)}>
-      <div className="gve-canvas-toolbar" aria-label="Canvas zoom controls" onClick={(event) => event.stopPropagation()}>
-        <button type="button" aria-label="Toggle flow outline" title="Toggle flow outline" className={outlineOpen ? 'gve-canvas-tool-active' : ''} onClick={() => setOutlineOpen(value => !value)}>☷</button>
+      <div
+        className="gve-canvas-toolbar"
+        aria-label="Canvas zoom controls"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <button
+          type="button"
+          aria-label="Toggle flow outline"
+          title="Toggle flow outline"
+          className={outlineOpen ? 'gve-canvas-tool-active' : ''}
+          onClick={() => setOutlineOpen((value) => !value)}
+        >
+          ☷
+        </button>
         <span className="gve-canvas-toolbar-divider" />
-        <button type="button" aria-label="Zoom out" title="Zoom out (Ctrl/Cmd -)" onClick={() => setZoom((value) => Math.max(0.7, Number((value - 0.1).toFixed(1))))}>−</button>
-        <button type="button" className="gve-zoom-value" aria-label="Reset zoom" title="Reset zoom (Ctrl/Cmd 0)" onClick={() => setZoom(1)}>{Math.round(zoom * 100)}%</button>
-        <button type="button" aria-label="Zoom in" title="Zoom in (Ctrl/Cmd +)" onClick={() => setZoom((value) => Math.min(1.4, Number((value + 0.1).toFixed(1))))}>+</button>
+        <button
+          type="button"
+          aria-label="Zoom out"
+          title="Zoom out (Ctrl/Cmd -)"
+          onClick={() => setZoom((value) => Math.max(0.7, Number((value - 0.1).toFixed(1))))}
+        >
+          −
+        </button>
+        <button
+          type="button"
+          className="gve-zoom-value"
+          aria-label="Reset zoom"
+          title="Reset zoom (Ctrl/Cmd 0)"
+          onClick={() => setZoom(1)}
+        >
+          {Math.round(zoom * 100)}%
+        </button>
+        <button
+          type="button"
+          aria-label="Zoom in"
+          title="Zoom in (Ctrl/Cmd +)"
+          onClick={() => setZoom((value) => Math.min(1.4, Number((value + 0.1).toFixed(1))))}
+        >
+          +
+        </button>
       </div>
       {outlineOpen && <OutlinePanel onClose={() => setOutlineOpen(false)} />}
       <div className="gve-canvas-scroll">
         <div className="gve-flow-stack" style={{ zoom }}>
-        {isLoading && <div className="gve-flow-loading-skeleton" aria-label="Loading flow" aria-busy="true"><span /><span /><span /></div>}
-        <div className="gve-flow-cap gve-flow-start">
-          <span>START</span>
-          <div className="gve-parameter-chips">
-            {flow.parameters.map((parameter) => (
-              <span className="gve-parameter-chip" key={parameter.name}>
-                {parameter.name}
-              </span>
-            ))}
-          </div>
-        </div>
-        {flow.blocks.length === 0 ? (
-          <div className="gve-empty-state">
-            <div className="gve-empty-icon" aria-hidden="true">
-              ✦
+          {isLoading && (
+            <div className="gve-flow-loading-skeleton" aria-label="Loading flow" aria-busy="true">
+              <span />
+              <span />
+              <span />
             </div>
-            <h2>Start building your flow</h2>
-            <p>Drag a block here, or double-click one in the palette to add it.</p>
-            <div className="gve-empty-quick-actions">
-              {(['sql-query', 'for-each', 'log-message'] as const).map((type) => {
-                const label = type === 'sql-query' ? 'Add SQL Query' : type === 'for-each' ? 'Add For Each' : 'Add Log Message'
-                return <button type="button" key={type} onClick={(event) => { event.stopPropagation(); addBlock(type, { parentId: null, index: flow.blocks.length }) }}>{label}</button>
-              })}
+          )}
+          <div className="gve-flow-cap gve-flow-start">
+            <span>START</span>
+            <div className="gve-parameter-chips">
+              {flow.parameters.map((parameter) => (
+                <span className="gve-parameter-chip" key={parameter.name}>
+                  {parameter.name}
+                </span>
+              ))}
             </div>
-            <DropZone target={{ parentId: null, index: 0 }} />
           </div>
-        ) : (
-          <BlockList blocks={flow.blocks} parentId={null} />
-        )}
-        <div className="gve-flow-cap gve-flow-end">END</div>
+          {flow.blocks.length === 0 ? (
+            <div className="gve-empty-state">
+              <div className="gve-empty-icon" aria-hidden="true">
+                ✦
+              </div>
+              <h2>Start building your flow</h2>
+              <p>Drag a block here, or double-click one in the palette to add it.</p>
+              <div className="gve-empty-quick-actions">
+                {(['sql-query', 'for-each', 'log-message'] as const).map((type) => {
+                  const label =
+                    type === 'sql-query'
+                      ? 'Add SQL Query'
+                      : type === 'for-each'
+                        ? 'Add For Each'
+                        : 'Add Log Message'
+                  return (
+                    <button
+                      type="button"
+                      key={type}
+                      onClick={(event) => {
+                        event.stopPropagation()
+                        addBlock(type, { parentId: null, index: flow.blocks.length })
+                      }}
+                    >
+                      {label}
+                    </button>
+                  )
+                })}
+              </div>
+              <DropZone target={{ parentId: null, index: 0 }} />
+            </div>
+          ) : (
+            <BlockList blocks={flow.blocks} parentId={null} />
+          )}
+          <div className="gve-flow-cap gve-flow-end">END</div>
         </div>
       </div>
     </main>

@@ -14,7 +14,12 @@ describe('inspector', () => {
     expect(useGve.getState().flow.blocks[0].props.message).toBe('hello')
 
     const level = screen.getByLabelText('Level') as HTMLSelectElement
-    expect(Array.from(level.options, option => option.value)).toEqual(['INFO', 'WARN', 'ERROR', 'DEBUG'])
+    expect(Array.from(level.options, (option) => option.value)).toEqual([
+      'INFO',
+      'WARN',
+      'ERROR',
+      'DEBUG'
+    ])
   })
 
   it('shows and edits the SQL Query escape text dropdown', () => {
@@ -22,7 +27,7 @@ describe('inspector', () => {
     render(<Inspector />)
 
     const escapeText = screen.getByLabelText('Escape text') as HTMLSelectElement
-    expect(Array.from(escapeText.options, option => option.value)).toEqual(['false', 'true'])
+    expect(Array.from(escapeText.options, (option) => option.value)).toEqual(['false', 'true'])
     expect(escapeText.value).toBe('false')
 
     fireEvent.change(escapeText, { target: { value: 'true' } })
@@ -38,18 +43,26 @@ describe('inspector', () => {
     expect(useGve.getState().flow.meta.name).toBe('Renamed')
 
     // A rename from elsewhere (undo, file open, the header field) must show here.
-    act(() => { useGve.getState().loadFlow(createEmptyFlow('From disk'), null) })
-    expect((screen.getByLabelText('Flow settings name') as HTMLInputElement).value).toBe('From disk')
+    act(() => {
+      useGve.getState().loadFlow(createEmptyFlow('From disk'), null)
+    })
+    expect((screen.getByLabelText('Flow settings name') as HTMLInputElement).value).toBe(
+      'From disk'
+    )
   })
 
   it('offers the flow datasources as options on a SQL Query block', () => {
-    act(() => { useGve.getState().updateDatasources(['Niku', 'Warehouse']) })
+    act(() => {
+      useGve.getState().updateDatasources(['Niku', 'Warehouse'])
+    })
     useGve.getState().addBlock('sql-query', { parentId: null, index: 0 })
     render(<Inspector />)
 
     const datasource = screen.getByLabelText('Datasource') as HTMLSelectElement
     expect(Array.from(datasource.options, (option) => option.value)).toEqual([
-      '', 'Niku', 'Warehouse'
+      '',
+      'Niku',
+      'Warehouse'
     ])
 
     fireEvent.change(datasource, { target: { value: 'Warehouse' } })
@@ -59,7 +72,9 @@ describe('inspector', () => {
   it('keeps a datasource value that is not in the flow list', () => {
     useGve.getState().addBlock('sql-query', { parentId: null, index: 0 })
     const id = useGve.getState().flow.blocks[0].id
-    act(() => { useGve.getState().updateProps(id, { datasource: 'Legacy' }) })
+    act(() => {
+      useGve.getState().updateProps(id, { datasource: 'Legacy' })
+    })
     render(<Inspector />)
 
     const datasource = screen.getByLabelText('Datasource') as HTMLSelectElement

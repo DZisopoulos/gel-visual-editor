@@ -35,9 +35,9 @@ function Palette({
   const [query, setQuery] = useState('')
   const [templatesOpen, setTemplatesOpen] = useState(false)
   const [snippetsOpen, setSnippetsOpen] = useState(false)
-  const [categoryCollapsed, setCategoryCollapsed] = useState<Partial<Record<NodeDefinition['category'], boolean>>>(
-    {}
-  )
+  const [categoryCollapsed, setCategoryCollapsed] = useState<
+    Partial<Record<NodeDefinition['category'], boolean>>
+  >({})
   const normalizedQuery = query.trim().toLowerCase()
 
   const setAllCollapsed = (value: boolean): void => {
@@ -45,8 +45,21 @@ function Palette({
   }
 
   return (
-    <aside className={`gve-palette${collapsed ? ' gve-panel-rail' : ''}`} aria-label="Block palette">
-      {compact && <button type="button" className="gve-panel-rail-toggle" aria-label={collapsed ? 'Expand block palette' : 'Collapse block palette'} title={collapsed ? 'Expand block palette' : 'Collapse block palette'} onClick={onToggleCollapsed}>{collapsed ? '›' : '‹'}</button>}
+    <aside
+      className={`gve-palette${collapsed ? ' gve-panel-rail' : ''}`}
+      aria-label="Block palette"
+    >
+      {compact && (
+        <button
+          type="button"
+          className="gve-panel-rail-toggle"
+          aria-label={collapsed ? 'Expand block palette' : 'Collapse block palette'}
+          title={collapsed ? 'Expand block palette' : 'Collapse block palette'}
+          onClick={onToggleCollapsed}
+        >
+          {collapsed ? '›' : '‹'}
+        </button>
+      )}
       <div
         className="gve-panel-resize gve-panel-resize-right"
         role="separator"
@@ -56,8 +69,20 @@ function Palette({
       />
       <div className="gve-panel-title">Blocks</div>
       <div className="gve-palette-search">
-        <button type="button" className="gve-template-launcher" onClick={() => setTemplatesOpen(true)}><span aria-hidden="true">✦</span> Starter templates</button>
-        <button type="button" className="gve-snippet-launcher" onClick={() => setSnippetsOpen(true)}><span aria-hidden="true">⌑</span> Snippet library</button>
+        <button
+          type="button"
+          className="gve-template-launcher"
+          onClick={() => setTemplatesOpen(true)}
+        >
+          <span aria-hidden="true">✦</span> Starter templates
+        </button>
+        <button
+          type="button"
+          className="gve-snippet-launcher"
+          onClick={() => setSnippetsOpen(true)}
+        >
+          <span aria-hidden="true">⌑</span> Snippet library
+        </button>
         <input
           type="search"
           aria-label="Search blocks"
@@ -74,8 +99,21 @@ function Palette({
           </button>
         </div>
       </div>
-      <TemplatePicker open={templatesOpen} onClose={() => setTemplatesOpen(false)} onChoose={template => { loadFlow(template.create(), null); setTemplatesOpen(false) }} />
-      <SnippetDialog open={snippetsOpen} onClose={() => setSnippetsOpen(false)} onInsert={(snippet: SavedSnippet) => insertExisting(snippet.block, { parentId: null, index: flow.blocks.length })} />
+      <TemplatePicker
+        open={templatesOpen}
+        onClose={() => setTemplatesOpen(false)}
+        onChoose={(template) => {
+          loadFlow(template.create(), null)
+          setTemplatesOpen(false)
+        }}
+      />
+      <SnippetDialog
+        open={snippetsOpen}
+        onClose={() => setSnippetsOpen(false)}
+        onInsert={(snippet: SavedSnippet) =>
+          insertExisting(snippet.block, { parentId: null, index: flow.blocks.length })
+        }
+      />
       <div className="gve-palette-groups">
         {categories.map((category) => {
           const entries = definitions.filter((def) => {
@@ -92,7 +130,7 @@ function Palette({
                 className="gve-palette-label"
                 aria-expanded={!isCollapsed}
                 onClick={() =>
-                    setCategoryCollapsed((value) => ({ ...value, [category]: !value[category] }))
+                  setCategoryCollapsed((value) => ({ ...value, [category]: !value[category] }))
                 }
               >
                 <span>{category}</span>

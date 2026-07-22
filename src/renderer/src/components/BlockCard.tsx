@@ -23,7 +23,11 @@ function BlockCard({ block, children }: BlockCardProps): React.JSX.Element {
   const summary = summaryField ? block.props[summaryField.key] : ''
   const { prompt } = useDialog()
   const saveAsSnippet = async (): Promise<void> => {
-    const name = await prompt('Save snippet', 'Choose a name for this reusable block.', block.props.stepName || def.name)
+    const name = await prompt(
+      'Save snippet',
+      'Choose a name for this reusable block.',
+      block.props.stepName || def.name
+    )
     if (name) saveSnippet(block, name)
   }
 
@@ -66,8 +70,28 @@ function BlockCard({ block, children }: BlockCardProps): React.JSX.Element {
           ⠿
         </span>
         <div className="gve-block-actions">
-          <button type="button" aria-label={`Duplicate ${def.name}`} title="Duplicate block" onClick={(event) => { event.stopPropagation(); duplicate(block.id) }}>＋</button>
-          <button type="button" aria-label={`Save ${def.name} as snippet`} title="Save as snippet" onClick={(event) => { event.stopPropagation(); void saveAsSnippet() }}>⌑</button>
+          <button
+            type="button"
+            aria-label={`Duplicate ${def.name}`}
+            title="Duplicate block"
+            onClick={(event) => {
+              event.stopPropagation()
+              duplicate(block.id)
+            }}
+          >
+            ＋
+          </button>
+          <button
+            type="button"
+            aria-label={`Save ${def.name} as snippet`}
+            title="Save as snippet"
+            onClick={(event) => {
+              event.stopPropagation()
+              void saveAsSnippet()
+            }}
+          >
+            ⌑
+          </button>
           <button
             type="button"
             aria-label={block.enabled ? `Disable ${def.name}` : `Enable ${def.name}`}

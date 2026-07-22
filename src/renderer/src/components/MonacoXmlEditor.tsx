@@ -8,13 +8,39 @@ let xmlLanguageConfigured = false
 function configureXmlLanguage(): void {
   if (xmlLanguageConfigured) return
   xmlLanguageConfigured = true
-  monaco.languages.setLanguageConfiguration('xml', { brackets: [['<', '>']], autoClosingPairs: [{ open: '<', close: '>' }, { open: '"', close: '"' }] })
+  monaco.languages.setLanguageConfiguration('xml', {
+    brackets: [['<', '>']],
+    autoClosingPairs: [
+      { open: '<', close: '>' },
+      { open: '"', close: '"' }
+    ]
+  })
   monaco.languages.registerCompletionItemProvider('xml', {
     triggerCharacters: ['<', ':', ' '],
     provideCompletionItems: (model, position) => {
       const line = model.getLineContent(position.lineNumber).slice(0, position.column - 1)
-      const range = new monaco.Range(position.lineNumber, position.column, position.lineNumber, position.column)
-      const suggestions = line.endsWith('<') ? ['gel:script', 'gel:set', 'gel:log', 'core:forEach', 'core:choose', 'sql:query', 'gel:email'].map(label => ({ label, kind: monaco.languages.CompletionItemKind.Keyword, insertText: label, range })) : []
+      const range = new monaco.Range(
+        position.lineNumber,
+        position.column,
+        position.lineNumber,
+        position.column
+      )
+      const suggestions = line.endsWith('<')
+        ? [
+            'gel:script',
+            'gel:set',
+            'gel:log',
+            'core:forEach',
+            'core:choose',
+            'sql:query',
+            'gel:email'
+          ].map((label) => ({
+            label,
+            kind: monaco.languages.CompletionItemKind.Keyword,
+            insertText: label,
+            range
+          }))
+        : []
       return { suggestions }
     }
   })
@@ -28,7 +54,7 @@ function MonacoXmlEditor({ xml, theme }: { xml: string; theme: ThemeId }): React
       defaultLanguage="xml"
       value={xml}
       theme={definition.monacoName}
-      beforeMount={monacoInstance => {
+      beforeMount={(monacoInstance) => {
         configureXmlLanguage()
         for (const themeOption of THEME_OPTIONS) {
           const definition = getTheme(themeOption.id)

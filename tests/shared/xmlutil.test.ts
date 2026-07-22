@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest'
-import { escapeXml, escapeAttr, fnv1a, encodeCommentJson, decodeCommentJson } from '../../src/shared/xmlutil'
+import {
+  escapeXml,
+  escapeAttr,
+  fnv1a,
+  encodeCommentJson,
+  decodeCommentJson
+} from '../../src/shared/xmlutil'
 
 describe('xmlutil', () => {
   it('escapes element text', () => {

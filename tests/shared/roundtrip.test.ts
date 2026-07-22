@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest'
-import { createEmptyFlow } from '../../src/shared/flow'
+import { createEmptyFlow, type Flow } from '../../src/shared/flow'
 import { createBlock } from '../../src/shared/registry'
 import { exportXml, importXml, GveImportError } from '../../src/shared/roundtrip'
 
-function flowWithSql() {
+function flowWithSql(): Flow {
   const f = createEmptyFlow('RT')
   const q = createBlock('sql-query')
   q.props = { stepName: '', datasource: 'Niku', resultVar: 'r', sql: 'SELECT 1 -- inline comment' }
@@ -21,7 +21,7 @@ describe('roundtrip', () => {
   it('the marker comment never contains --', () => {
     const xml = exportXml(flowWithSql())
     const marker = xml.slice(0, xml.indexOf('-->'))
-    expect(marker.slice(4)).not.toContain('--')  // skip the "<!--" itself
+    expect(marker.slice(4)).not.toContain('--') // skip the "<!--" itself
   })
   it('detects drift when body is hand-edited', () => {
     const xml = exportXml(flowWithSql())
@@ -35,7 +35,11 @@ describe('roundtrip', () => {
   })
   it('throws no-marker for foreign scripts', () => {
     expect(() => importXml('<gel:script/>')).toThrowError(GveImportError)
-    try { importXml('<gel:script/>') } catch (e) { expect((e as GveImportError).reason).toBe('no-marker') }
+    try {
+      importXml('<gel:script/>')
+    } catch (e) {
+      expect((e as GveImportError).reason).toBe('no-marker')
+    }
   })
   it('imports an export whose line endings were converted to CRLF', () => {
     const f = flowWithSql()
@@ -66,6 +70,10 @@ describe('roundtrip', () => {
   })
   it('throws bad-payload for corrupted JSON', () => {
     const broken = '<!-- GVE-FLOW v1.0\n{not json\nBODY-HASH:00000000\n-->\n<gel:script/>'
-    try { importXml(broken) } catch (e) { expect((e as GveImportError).reason).toBe('bad-payload') }
+    try {
+      importXml(broken)
+    } catch (e) {
+      expect((e as GveImportError).reason).toBe('bad-payload')
+    }
   })
 })

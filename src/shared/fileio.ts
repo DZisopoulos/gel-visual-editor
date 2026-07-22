@@ -16,6 +16,12 @@ export function parseFlowFile(content: string, fileName: string): ImportResult {
     throw new GveImportError('bad-payload', 'Flow file is not valid JSON.')
   }
 
-  try { return { flow: parseFlowDocument(parsed), drift: false } }
-  catch (error) { throw new GveImportError('bad-payload', error instanceof Error ? error.message : 'Flow file has an unexpected shape.') }
+  try {
+    return { flow: parseFlowDocument(parsed), drift: false }
+  } catch (error) {
+    throw new GveImportError(
+      'bad-payload',
+      error instanceof Error ? error.message : 'Flow file has an unexpected shape.'
+    )
+  }
 }

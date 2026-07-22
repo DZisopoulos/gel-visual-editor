@@ -3,8 +3,12 @@ import { useGve } from '../src/renderer/src/store'
 import { createEmptyFlow } from '../src/shared/flow'
 
 describe('store', () => {
-  beforeEach(() => { useGve.getState().loadFlow(createEmptyFlow('T'), null) })
-  afterEach(() => { vi.useRealTimers() })
+  beforeEach(() => {
+    useGve.getState().loadFlow(createEmptyFlow('T'), null)
+  })
+  afterEach(() => {
+    vi.useRealTimers()
+  })
 
   it('addBlock inserts, selects and marks dirty', () => {
     useGve.getState().addBlock('log-message', { parentId: null, index: 0 })
@@ -37,7 +41,9 @@ describe('store', () => {
     useGve.getState().addBlock('log-message', { parentId: null, index: 0 })
     useGve.getState().loadFlow(createEmptyFlow('New'), 'C:/x.gve')
     const s = useGve.getState()
-    expect(s.past).toHaveLength(0); expect(s.dirty).toBe(false); expect(s.filePath).toBe('C:/x.gve')
+    expect(s.past).toHaveLength(0)
+    expect(s.dirty).toBe(false)
+    expect(s.filePath).toBe('C:/x.gve')
   })
   it('updateParameters replaces parameters and snapshots the flow', () => {
     const parameters = [{ name: 'projectId', type: 'string' as const, default: '' }]

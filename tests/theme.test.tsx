@@ -13,7 +13,10 @@ describe('theme preferences', () => {
     fireEvent.change(screen.getByLabelText('XML theme'), { target: { value: 'dracula' } })
 
     expect(document.querySelector('.gve-app')?.getAttribute('data-app-theme')).toBe('github-dark')
-    expect(JSON.parse(window.localStorage.getItem(THEME_STORAGE_KEY) ?? '{}')).toEqual({ app: 'github-dark', xml: 'dracula' })
+    expect(JSON.parse(window.localStorage.getItem(THEME_STORAGE_KEY) ?? '{}')).toEqual({
+      app: 'github-dark',
+      xml: 'dracula'
+    })
 
     fireEvent.click(screen.getByRole('tab', { name: 'XML Preview' }))
     expect(document.querySelector('.gve-xmlpane')?.getAttribute('data-xml-theme')).toBe('dracula')

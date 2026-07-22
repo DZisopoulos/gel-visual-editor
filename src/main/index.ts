@@ -32,7 +32,7 @@ function createWindow(): void {
   const contentsId = mainWindow.webContents.id
   let confirmedClose = false
   let closeRequestPending = false
-  mainWindow.on('close', event => {
+  mainWindow.on('close', (event) => {
     if (confirmedClose || !unsavedContents.has(contentsId)) return
     event.preventDefault()
     if (closeRequestPending) return
@@ -131,11 +131,11 @@ app.whenReady().then(() => {
     else unsavedContents.delete(event.sender.id)
   })
 
-  ipcMain.handle('gve:window:minimize', event => {
+  ipcMain.handle('gve:window:minimize', (event) => {
     BrowserWindow.fromWebContents(event.sender)?.minimize()
   })
 
-  ipcMain.handle('gve:window:toggle-maximize', event => {
+  ipcMain.handle('gve:window:toggle-maximize', (event) => {
     const window = BrowserWindow.fromWebContents(event.sender)
     if (!window) return false
     if (window.isMaximized()) window.unmaximize()
@@ -143,11 +143,11 @@ app.whenReady().then(() => {
     return window.isMaximized()
   })
 
-  ipcMain.handle('gve:window:is-maximized', event => {
+  ipcMain.handle('gve:window:is-maximized', (event) => {
     return BrowserWindow.fromWebContents(event.sender)?.isMaximized() ?? false
   })
 
-  ipcMain.handle('gve:window:close', event => {
+  ipcMain.handle('gve:window:close', (event) => {
     BrowserWindow.fromWebContents(event.sender)?.close()
   })
 

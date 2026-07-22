@@ -58,25 +58,71 @@ import { getSecurityGroupMembers } from './blocks/get-security-group-members'
 
 const defs = new Map<string, NodeDefinition>(
   [
-    setVariable, sqlQuery, forEach, logMessage, rawGel,
-    choose, when, otherwise, switchBlock, caseBlock, defaultBlock, tryBlock, catchBlock, comment,
-    email, xogRead, xogWrite,
-    soapInvoke, httpCall, fileRead, fileWrite, ftpTransfer, includeScript,
-    ifBlock, whileBlock, removeVariable, newObject, invokeMethod, invokeStatic, methodArg,
-    useBean, captureToFile, importScript, printExpression,
-    releaseDatasource, currentDate, sleep,
-    xogReadProject, xogWriteProject, xogReadResource, xogWriteResource,
-    xogReadObs, xogWriteObs, xogReadCustomObject, xogWriteCustomObject, setCustomField,
-    lookupResourceByUsername, lookupProjectByCode, getProjectTasks, getResourceAllocation,
-    getTimesheetStatus, getCostPlanSummary, translateLookupValue, getSecurityGroupMembers
-  ].map(d => [d.type, d]))
+    setVariable,
+    sqlQuery,
+    forEach,
+    logMessage,
+    rawGel,
+    choose,
+    when,
+    otherwise,
+    switchBlock,
+    caseBlock,
+    defaultBlock,
+    tryBlock,
+    catchBlock,
+    comment,
+    email,
+    xogRead,
+    xogWrite,
+    soapInvoke,
+    httpCall,
+    fileRead,
+    fileWrite,
+    ftpTransfer,
+    includeScript,
+    ifBlock,
+    whileBlock,
+    removeVariable,
+    newObject,
+    invokeMethod,
+    invokeStatic,
+    methodArg,
+    useBean,
+    captureToFile,
+    importScript,
+    printExpression,
+    releaseDatasource,
+    currentDate,
+    sleep,
+    xogReadProject,
+    xogWriteProject,
+    xogReadResource,
+    xogWriteResource,
+    xogReadObs,
+    xogWriteObs,
+    xogReadCustomObject,
+    xogWriteCustomObject,
+    setCustomField,
+    lookupResourceByUsername,
+    lookupProjectByCode,
+    getProjectTasks,
+    getResourceAllocation,
+    getTimesheetStatus,
+    getCostPlanSummary,
+    translateLookupValue,
+    getSecurityGroupMembers
+  ].map((d) => [d.type, d])
+)
 
 export function getNodeDef(type: string): NodeDefinition {
   const def = defs.get(type)
   if (!def) throw new Error(`Unknown node type: ${type}`)
   return def
 }
-export function allNodeDefs(): NodeDefinition[] { return [...defs.values()] }
+export function allNodeDefs(): NodeDefinition[] {
+  return [...defs.values()]
+}
 export function createBlock(type: string): Block {
   const def = getNodeDef(type)
   const props: Record<string, string> = { stepName: '' }

@@ -6,9 +6,12 @@ function commentText(value: string): string {
 }
 
 export const comment: NodeDefinition = {
-  type: 'comment', name: 'Comment', category: 'core', color: '#8A93A6',
+  type: 'comment',
+  name: 'Comment',
+  category: 'core',
+  color: '#8A93A6',
   namespaces: [],
   fields: [{ key: 'message', label: 'Comment', kind: 'textarea', required: true }],
   introduces: () => [],
-  toGel: block => [`<!-- ${commentText(block.props.message)} -->`]
+  toGel: (block) => [`<!-- ${commentText(block.props.message)} -->`]
 }

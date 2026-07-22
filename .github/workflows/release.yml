@@ -34,12 +34,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # Non-blocking for now — see the note in ci.yml. A release should not be
-      # blocked by pre-existing formatting warnings, but typecheck and tests
-      # below are hard gates.
       - name: Lint
         run: npm run lint
-        continue-on-error: true
 
       - name: Typecheck
         run: npm run typecheck
