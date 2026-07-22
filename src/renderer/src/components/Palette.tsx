@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { allNodeDefs } from '../../../shared/registry'
 import type { NodeDefinition } from '../../../shared/registry/types'
 import { useGve } from '../store'
@@ -27,11 +27,11 @@ function Palette({
   collapsed?: boolean
   onToggleCollapsed?: () => void
 }): React.JSX.Element {
-  const flow = useGve((s) => s.flow)
+  const blocksLength = useGve((s) => s.flow.blocks.length)
   const addBlock = useGve((s) => s.addBlock)
   const loadFlow = useGve((s) => s.loadFlow)
   const insertExisting = useGve((s) => s.insertExisting)
-  const definitions = allNodeDefs()
+  const definitions = useMemo(() => allNodeDefs(), [])
   const [query, setQuery] = useState('')
   const [templatesOpen, setTemplatesOpen] = useState(false)
   const [snippetsOpen, setSnippetsOpen] = useState(false)
@@ -43,6 +43,18 @@ function Palette({
   const setAllCollapsed = (value: boolean): void => {
     setCategoryCollapsed(Object.fromEntries(categories.map((category) => [category, value])))
   }
+
+  const entriesByCategory = useMemo(() => {
+    const result: Partial<Record<NodeDefinition['category'], NodeDefinition[]>> = {}
+    for (const category of categories) {
+      result[category] = definitions.filter((def) => {
+        if (def.category !== category) return false
+        if (!normalizedQuery) return true
+        return `${def.name} ${def.type}`.toLowerCase().includes(normalizedQuery)
+      })
+    }
+    return result
+  }, [definitions, normalizedQuery])
 
   return (
     <aside
@@ -111,16 +123,12 @@ function Palette({
         open={snippetsOpen}
         onClose={() => setSnippetsOpen(false)}
         onInsert={(snippet: SavedSnippet) =>
-          insertExisting(snippet.block, { parentId: null, index: flow.blocks.length })
+          insertExisting(snippet.block, { parentId: null, index: blocksLength })
         }
       />
       <div className="gve-palette-groups">
         {categories.map((category) => {
-          const entries = definitions.filter((def) => {
-            if (def.category !== category) return false
-            if (!normalizedQuery) return true
-            return `${def.name} ${def.type}`.toLowerCase().includes(normalizedQuery)
-          })
+          const entries = entriesByCategory[category] ?? []
           if (entries.length === 0) return null
           const isCollapsed = Boolean(categoryCollapsed[category]) && !normalizedQuery
           return (
@@ -141,11 +149,10 @@ function Palette({
               </button>
               {!isCollapsed &&
                 entries.map((def) => (
-                  <div
+                  <button
+                    type="button"
                     className="gve-palette-row"
                     key={def.type}
-                    role="button"
-                    tabIndex={0}
                     draggable
                     onDragStart={(event) => {
                       event.dataTransfer.setData('application/x-gve-new-block', def.type)
@@ -153,19 +160,27 @@ function Palette({
                       setBlockDragPreview(event, def.name, def.color)
                     }}
                     onDoubleClick={() =>
-                      addBlock(def.type, { parentId: null, index: flow.blocks.length })
+                      addBlock(def.type, { parentId: null, index: blocksLength })
                     }
-                    onKeyDown={(event) => {
-                      if (event.key === 'Enter' || event.key === ' ') {
-                        event.preventDefault()
-                        addBlock(def.type, { parentId: null, index: flow.blocks.length })
-                      }
+                    onClick={(event) => {
+                      // Documented interaction is mouse double-click (see Canvas.tsx's
+                      // empty-state hint), so a plain mouse click must stay a no-op.
+                      // A native <button> fires `click` for a real mouse click AND for
+                      // keyboard Enter/Space activation, and it fires `click` twice plus
+                      // `dblclick` once for a real double-click — wiring both onClick and
+                      // onDoubleClick unconditionally would triple-add a block per
+                      // double-click. Keyboard-synthesized clicks are reported with
+                      // `detail === 0` (mouse clicks report the click count, starting at
+                      // 1), so use that to let only Enter/Space reach addBlock here while
+                      // real mouse clicks/double-clicks fall through to onDoubleClick above.
+                      if (event.detail !== 0) return
+                      addBlock(def.type, { parentId: null, index: blocksLength })
                     }}
                   >
                     <span className="gve-palette-dot" style={{ backgroundColor: def.color }} />
                     <BlockIcon type={def.type} definition={def} className="gve-palette-icon" />
                     <span>{def.name}</span>
-                  </div>
+                  </button>
                 ))}
             </section>
           )

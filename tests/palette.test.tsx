@@ -43,8 +43,15 @@ describe('palette', () => {
     useGve.getState().loadFlow(createEmptyFlow('T'), null)
     render(<Palette />)
     const log = screen.getByRole('button', { name: 'Log Message' })
-    expect(log.getAttribute('tabindex')).toBe('0')
-    fireEvent.keyDown(log, { key: 'Enter' })
+    // Native <button> elements are focusable/keyboard-operable without an
+    // explicit tabindex attribute (unlike the old role="button" div).
+    expect(log.tagName).toBe('BUTTON')
+    // jsdom doesn't simulate a real browser's default action of firing a
+    // `click` when Enter/Space is pressed on a focused button, so fire the
+    // resulting click directly. A keyboard-triggered click reports
+    // `detail === 0` (same as jsdom's default synthetic MouseEvent here),
+    // which is exactly the path Palette's onClick handler expects.
+    fireEvent.click(log)
     expect(useGve.getState().flow.blocks[0].type).toBe('log-message')
   })
 
