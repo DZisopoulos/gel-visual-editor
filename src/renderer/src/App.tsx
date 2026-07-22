@@ -210,6 +210,16 @@ function AppContent(): React.JSX.Element {
     document.body.style.cursor = 'col-resize'
     document.body.style.userSelect = 'none'
   }
+  const nudgeLayout = (kind: 'palette' | 'inspector', delta: number): void => {
+    setLayout((current) =>
+      kind === 'palette'
+        ? { ...current, paletteWidth: Math.min(420, Math.max(180, current.paletteWidth + delta)) }
+        : {
+            ...current,
+            inspectorWidth: Math.min(520, Math.max(260, current.inspectorWidth - delta))
+          }
+    )
+  }
   const updateTheme = (kind: keyof ThemePreferences, value: ThemeId): void =>
     setThemePreferences((preferences) => ({ ...preferences, [kind]: value }))
   const paletteRail = compactPanels && !paletteExpanded
@@ -241,6 +251,7 @@ function AppContent(): React.JSX.Element {
       >
         <Palette
           onResizeStart={(event) => startResize('palette', event)}
+          onResizeKey={(delta) => nudgeLayout('palette', delta)}
           compact={compactPanels}
           collapsed={paletteRail}
           onToggleCollapsed={() => setPaletteExpanded((value) => !value)}
@@ -272,6 +283,7 @@ function AppContent(): React.JSX.Element {
         </div>
         <Inspector
           onResizeStart={(event) => startResize('inspector', event)}
+          onResizeKey={(delta) => nudgeLayout('inspector', delta)}
           compact={compactPanels}
           collapsed={inspectorRail}
           onToggleCollapsed={() => setInspectorExpanded((value) => !value)}
