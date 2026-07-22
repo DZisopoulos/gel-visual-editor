@@ -1268,6 +1268,9 @@ button:disabled {
   padding: 12px 14px;
   border-bottom: 1px solid var(--border);
 }
+.gve-command-search:focus-within {
+  border-color: var(--accent);
+}
 .gve-command-search-icon {
   color: var(--accent);
   font-size: 21px;
