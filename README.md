@@ -197,7 +197,7 @@ To build the application:
 # Type-check and create production bundles
 npm run build
 
-# Windows installer / distributable build
+# Windows portable executable -> dist/gve-<version>-portable.exe
 npm run build:win
 
 # Unpacked portable-style build for local testing
@@ -250,6 +250,7 @@ src/
 │  └─ theme.css                   Themed desktop UI styling and animations
 └─ shared/
    ├─ registry/                   Block definitions, fields, namespaces, GEL emitters
+   │  └─ blocks/                  One module per block type
    ├─ generate.ts                 GEL generation
    ├─ roundtrip.ts                XML marker and drift-safe import/export
    ├─ schema.ts                   Runtime document validation
