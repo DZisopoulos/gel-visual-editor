@@ -76,6 +76,9 @@ button:not(:disabled) {
 button:not(:disabled):hover {
   border-color: var(--accent);
 }
+button:not(:disabled):not(.gve-window-control):active {
+  transform: scale(0.96);
+}
 button:disabled {
   color: var(--text-muted);
   opacity: 0.55;
@@ -207,11 +210,12 @@ button:disabled {
 .gve-header-actions {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   margin-left: auto;
 }
 
 .gve-icon-button {
+  position: relative;
   display: grid;
   width: 32px;
   height: 32px;
@@ -219,6 +223,12 @@ button:disabled {
   place-items: center;
   border-color: transparent;
   background: transparent;
+}
+
+.gve-icon-button::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
 }
 
 .gve-icon-button:hover {
@@ -818,14 +828,20 @@ button:disabled {
 
 .gve-block-actions {
   display: flex;
-  gap: 4px;
+  gap: 12px;
 }
 .gve-block-actions button {
+  position: relative;
   width: 28px;
   height: 28px;
   padding: 0;
   color: var(--text-muted);
   line-height: 1;
+}
+.gve-block-actions button::before {
+  content: '';
+  position: absolute;
+  inset: -6px;
 }
 .gve-block-actions button:hover {
   color: var(--text);
@@ -1193,6 +1209,7 @@ button:disabled {
   font-size: 11px;
 }
 .gve-modal-close {
+  position: relative;
   width: 30px;
   height: 30px;
   margin-left: auto;
@@ -1201,6 +1218,11 @@ button:disabled {
   background: transparent;
   color: var(--text-muted);
   font-size: 22px;
+}
+.gve-modal-close::before {
+  content: '';
+  position: absolute;
+  inset: -5px;
 }
 .gve-modal-close:hover {
   background: var(--panel-2);
@@ -1871,6 +1893,7 @@ textarea {
   font-size: 12px;
 }
 .gve-outline-header button {
+  position: relative;
   width: 26px;
   height: 26px;
   padding: 0;
@@ -1878,6 +1901,11 @@ textarea {
   background: transparent;
   color: var(--text-muted);
   font-size: 18px;
+}
+.gve-outline-header button::before {
+  content: '';
+  position: absolute;
+  inset: -7px;
 }
 .gve-outline-list {
   overflow-y: auto;
@@ -2114,6 +2142,7 @@ textarea {
   font-size: 11px;
 }
 .gve-template-header > button {
+  position: relative;
   width: 30px;
   height: 30px;
   padding: 0;
@@ -2121,6 +2150,11 @@ textarea {
   background: transparent;
   color: var(--text-muted);
   font-size: 21px;
+}
+.gve-template-header > button::before {
+  content: '';
+  position: absolute;
+  inset: -5px;
 }
 .gve-template-grid {
   display: grid;
@@ -2260,4 +2294,10 @@ textarea {
 .gve-snippet-row button {
   padding: 5px 7px;
   font-size: 10px;
+}
+
+.gve-icon-button:not(:disabled):active,
+.gve-template-card:not(:disabled):active,
+.gve-validation-row:not(:disabled):active {
+  transform: scale(0.96);
 }
