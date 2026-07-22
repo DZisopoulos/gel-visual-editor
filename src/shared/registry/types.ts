@@ -1,6 +1,7 @@
 import type { Block } from '../flow'
 
-export type FieldKind = 'text' | 'textarea' | 'sql' | 'xml' | 'expression' | 'select' | 'datasource'
+export type FieldKind =
+  'text' | 'textarea' | 'sql' | 'xml' | 'expression' | 'select' | 'datasource' | 'secret'
 export interface FieldDef {
   key: string
   label: string

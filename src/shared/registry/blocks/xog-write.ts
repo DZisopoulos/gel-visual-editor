@@ -10,7 +10,7 @@ export const xogWrite: NodeDefinition = {
   fields: [
     { key: 'url', label: 'XOG URL', kind: 'text', required: true },
     { key: 'username', label: 'Username', kind: 'text' },
-    { key: 'password', label: 'Password', kind: 'text' },
+    { key: 'password', label: 'Password', kind: 'secret' },
     { key: 'payload', label: 'Payload', kind: 'xml', required: true },
     { key: 'resultVar', label: 'Result variable', kind: 'text', placeholder: 'xogResult' }
   ],
